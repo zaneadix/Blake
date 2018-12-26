@@ -8,6 +8,7 @@ Hey rockstar!
 My name is Blake and I'm here to make your experience as part of the Tranquilina Fitness Club as fun and simple as possible. Below, I've documented how you and I can work together to stay on top of your workouts and keep up to date on everyone else.
 
 ### Logging Workouts
+---
 
 When you've completed a workout, head over to the [Workout Logs](https://discordapp.com/channels/525441114648608780/525819670553690156) channel enter a message that matches the following format.
 

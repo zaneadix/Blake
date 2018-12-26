@@ -1,0 +1,12 @@
+{
+  "installed": {
+    "client_id": "481345782251-n1u7133ajsusa3rq48b1ji5a5p1vtve6.apps.googleusercontent.com",
+    "project_id": "tranquilina-fitn-1545404663129",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://www.googleapis.com/oauth2/v3/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_secret": "yWPQXr5BPzZWdDj9efp8eVwh",
+    "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
+  },
+  "directoryID": "1wkQU8B4j9OAMBi3YJK1G6ZMYpNhoDtFi"
+}

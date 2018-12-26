@@ -6,7 +6,7 @@ const getWorkoutLog = require("./getWorkoutLog");
 const templateLogWorkout = require("./templateLogWorkout");
 
 let directoryID = process.env.TFC_DIRECTORY_ID;
-let names = ["Steven", "McFarts", "Borsin", "Charlie", "Angela", "Dracula"];
+// let names = ["Steven", "McFarts", "Borsin", "Charlie", "Angela", "Dracula"];
 
 let g = {
   drive: google.drive({ version: "v3" }),
@@ -26,7 +26,7 @@ const tallyWorkout = async ({ userName, exercise, duration, date }) => {
 
   let workoutLog = await getWorkoutLog(g, directoryID, year, month);
 
-  userName = names[Math.floor(Math.random() * names.length)];
+  // userName = names[Math.floor(Math.random() * names.length)];
 
   if (workoutLog) {
     // Get tally data for updating

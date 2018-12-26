@@ -22,5 +22,6 @@ const getLogValues = content => {
 module.exports = {
   isLog,
   imageExts,
+  timeUnits,
   getLogValues
 };

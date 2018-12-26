@@ -1,21 +1,16 @@
 const Discord = require("discord.js");
-const fs = require("fs");
 const g = require("./google");
 const { isLog, imageExts, timeUnits, getLogValues } = require("./utils");
 const dayIsAfter = require("date-fns/is_after");
 
+let authToken = process.env.DISCORD_TOKEN;
 let client = new Discord.Client();
-let logBuffer = {};
-let config = null;
+// let logBuffer = {};
 
-fs.readFile("config/discord.json", (err, content) => {
-  if (err) return console.log("Error loading discord credentials:", err);
-  config = JSON.parse(content);
-  client
-    .login(config.token)
-    .then(() => {})
-    .catch(error => console.error(error));
-});
+client
+  .login(authToken)
+  .then(() => {})
+  .catch(error => console.error(error));
 
 client.on("ready", () => {
   console.log(client.user.username, "is up and running.");

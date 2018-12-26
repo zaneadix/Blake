@@ -2,6 +2,8 @@ const templateWorkoutLog = require("./templateWorkoutLog");
 const templateLogSheets = require("./templateLogSheets");
 const serializeWorkoutLog = require("./serializeWorkoutLog");
 
+const owner = process.env.TFC_OWNER;
+
 module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
   let logName = `${year} Workout Log`;
   let spreadsheetId;
@@ -36,19 +38,16 @@ module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
   }
 
   if (!workoutLog) {
-    // Create the log file
     await sheets.spreadsheets
       .create({ resource: templateWorkoutLog(logName) })
       .then(reciever)
       .catch(error => console.log(error));
-
     if (workoutLog) {
       //Apply Formatting
       await sheets.spreadsheets
         .batchUpdate(templateLogSheets(workoutLog))
         .then(() => {})
         .catch(error => console.log(error));
-
       // Move file into TFC directory
       await drive.files
         .update({
@@ -57,6 +56,23 @@ module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
         })
         .then(() => {})
         .catch(error => console.log(error));
+
+      if (owner) {
+        // Transfer ownership of file to TFC owner
+        await drive.permissions
+          .create({
+            fileId: workoutLog.id,
+            transferOwnership: true,
+            resource: {
+              type: "user",
+              role: "owner",
+              emailAddress: owner,
+              transferOwnership: true
+            }
+          })
+          .then(() => {})
+          .catch(error => console.log(error));
+      }
     }
   }
 

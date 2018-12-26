@@ -1,13 +1,10 @@
 const Discord = require("discord.js");
 const fs = require("fs");
 const g = require("./google");
-const { isLog, getLogValues } = require("./utils");
-const differenceInDays = require("date-fns/difference_in_days");
+const { isLog, imageExts, timeUnits, getLogValues } = require("./utils");
 const dayIsAfter = require("date-fns/is_after");
 
 let client = new Discord.Client();
-let imageExts = /\.(jpg?g|tiff|png)$/i;
-let timeUnits = ["min", "minutes", "hr", "hour", "hours"];
 let logBuffer = {};
 let config = null;
 
@@ -68,12 +65,12 @@ client.on("message", async message => {
         );
         return;
       }
-      // if (differenceInDays(new Date(), date) > 5) {
-      //   message.channel.send(
-      //     `Date alert, ${author}! The date you entered is outside the 5 day window. Please contact an admin to have your workout logged manually.`
-      //   );
-      //   return;
-      // }
+      if (differenceInDays(new Date(), date) > 5) {
+        message.channel.send(
+          `Date alert, ${author}! The date you entered is outside the 5 day window. Please contact an admin to have your workout logged manually.`
+        );
+        return;
+      }
     }
 
     date = date || Date.now();

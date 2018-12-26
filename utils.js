@@ -1,4 +1,6 @@
 const logFormat = /^(\w[\w\s]*)\s*for\s*((\d*)\s*?([a-z]+))(\s*on\s*((\d{1,2})\/(\d{1,2})(\/(\d{2}))?))?/i;
+const imageExts = /\.(jpg?g|tiff|png)$/i;
+const timeUnits = ["min", "mins", "minutes", "hr", "hrs", "hour", "hours"];
 
 const isLog = content => {
   return logFormat.test(content);
@@ -19,5 +21,6 @@ const getLogValues = content => {
 
 module.exports = {
   isLog,
+  imageExts,
   getLogValues
 };

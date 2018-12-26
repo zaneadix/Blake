@@ -4,7 +4,8 @@
   "description": "Bot for Tranquilina Fitness Club automation",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index"
   },
   "author": "Zane Adickes <zaneadix@gmail.com> (https://github.com/zaneadix)",
   "dependencies": {

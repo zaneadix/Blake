@@ -41,3 +41,4 @@ Punched bricks for 10 minutes
 Jumped up and down for 2 hours
 Cartwheels for 1 hr
 ```
+Once I've reviewed your log submission and found it's free of funny business, I'll record it and let you know all is good with a 👍. If anything goes wrong, I'll mark your submission with an ❌ and let you know if there's anything you can do to help me sovle the problem.

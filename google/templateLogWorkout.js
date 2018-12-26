@@ -53,8 +53,6 @@ module.exports = (
     return row[0] === userName;
   });
 
-  console.log("Row is", tallyRow);
-
   if (userRow) {
     let currentValue = userRow[monthNumber];
     tallyRequest = new UpdateCellRequest(

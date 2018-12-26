@@ -13,6 +13,7 @@ const SCOPES = [
   "https://www.googleapis.com/auth/drive.metadata",
   "https://www.googleapis.com/auth/spreadsheets"
 ];
+let names = ["Steven", "McFarts", "Borsin", "Charlie", "Angela", "Dracula"];
 let config = {};
 let g = {
   drive: null,
@@ -91,7 +92,7 @@ const tallyWorkout = async ({ userName, exercise, duration, date }) => {
 
   let workoutLog = await getWorkoutLog(g, directoryID, year, month);
 
-  // userName = "charles";
+  userName = names[Math.floor(Math.random() * names.length)];
 
   if (workoutLog) {
     // Get tally data for updating

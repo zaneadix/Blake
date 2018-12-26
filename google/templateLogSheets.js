@@ -72,7 +72,7 @@ module.exports = workoutLog => {
       workoutLog.sheets["Tally"],
       1,
       14,
-      [{ start: 1, end: 14, width: 80 }],
+      [{ start: 0, end: 1, width: 140 }, { start: 1, end: 14, width: 80 }],
       true
     )
   ];

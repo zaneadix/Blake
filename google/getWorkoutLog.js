@@ -25,8 +25,6 @@ module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
         }
       })
       .catch(error => console.log(error));
-  } else {
-    console.log("GOT LOG FROM CACHE");
   }
 
   if (spreadsheetId) {

@@ -1,6 +1,7 @@
 const { google } = require("googleapis");
 const formatDate = require("date-fns/format");
 
+const { formatLogDate } = require("./utils");
 const authorize = require("./authorize");
 const getWorkoutLog = require("./getWorkoutLog");
 const templateLogWorkout = require("./templateLogWorkout");
@@ -20,55 +21,90 @@ const initializeClients = async () => {
   g.sheets = google.sheets({ version: "v4", auth });
 };
 
-const tallyWorkout = async ({ userName, exercise, duration, date }) => {
+const tallyWorkout = async ({
+  user,
+  exercise,
+  duration,
+  date,
+  logTime,
+  imageURL
+}) => {
   let year = formatDate(date, "YYYY");
   let month = formatDate(date, "MMM");
+  let firstOfDay = true;
+  let workoutLog;
 
-  let workoutLog = await getWorkoutLog(g, directoryID, year, month);
+  try {
+    workoutLog = await getWorkoutLog(g, directoryID, year, month);
+  } catch (error) {
+    // console.log("Failed to retrieve workout log");
+    throw error;
+  }
 
   // userName = names[Math.floor(Math.random() * names.length)];
 
-  if (workoutLog) {
-    // Get tally data for updating
-    let tallyData;
+  // Get tally data for updating
+
+  let tallyData, logData;
+  try {
     await g.sheets.spreadsheets.values
-      .get({
+      .batchGet({
         spreadsheetId: workoutLog.id,
-        range: "Tally",
+        ranges: ["Tally", month],
         majorDimension: "ROWS"
       })
       .then(({ data }) => {
-        tallyData = data.values;
-      })
-      .catch(error => console.log(error));
+        tallyData = data.valueRanges[0].values;
+        logData = data.valueRanges[1].values;
+      });
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to retrieve spreadsheet values");
+  }
 
-    if (tallyData) {
+  // let tallyData, logData;
+  // await g.sheets.spreadsheets.values
+  //   .batchGet({
+  //     spreadsheetId: workoutLog.id,
+  //     ranges: ["Tally", month],
+  //     majorDimension: "ROWS"
+  //   })
+  //   .then(({ data }) => {
+  //     tallyData = data.valueRanges[0].values;
+  //     logData = data.valueRanges[1].values;
+  //   })
+  //   .catch(error => console.log(error));
+
+  if (logData) {
+    firstOfDay = !logData.find(row => {
+      return row[0] === user.id && row[4] === formatLogDate(date);
+    });
+  }
+
+  if (tallyData) {
+    try {
       await g.sheets.spreadsheets
         .batchUpdate(
           templateLogWorkout(
             workoutLog,
             tallyData,
             month,
-            userName,
+            user,
             exercise,
             duration,
-            date
+            date,
+            logTime,
+            firstOfDay,
+            imageURL
           )
         )
-        .then(() => {})
-        .catch(error => console.log(error.errors));
+        .then(() => {});
+    } catch (error) {
+      console.log(error);
+      throw new Error("Failed to update spreadsheet");
     }
   }
-
-  return;
 };
-
-// tallyWorkout({
-//   userName: "zane",
-//   exercise: "ham",
-//   duration: "60min",
-//   date: new Date()
-// });
 
 initializeClients();
 

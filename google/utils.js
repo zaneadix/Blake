@@ -1,3 +1,5 @@
+const formatDate = require("date-fns/format");
+
 const BLUE = {
   red: 0.082,
   green: 0.396,
@@ -25,8 +27,12 @@ const MONTHS = [
   "Dec"
 ];
 
+const formatLogDate = date => {
+  return formatDate(date || Date.now(), "MMM D");
+};
+
 class StringValue {
-  constructor(stringValue) {
+  constructor(stringValue = "") {
     this.userEnteredValue = {
       stringValue
     };
@@ -34,15 +40,23 @@ class StringValue {
 }
 
 class NumberValue {
-  constructor(numberValue) {
+  constructor(numberValue = 0) {
     this.userEnteredValue = {
       numberValue
     };
   }
 }
 
+class BooleanValue {
+  constructor(boolValue = true) {
+    this.userEnteredValue = {
+      boolValue
+    };
+  }
+}
+
 class FormulaValue {
-  constructor(formulaValue) {
+  constructor(formulaValue = "") {
     this.userEnteredValue = {
       formulaValue
     };
@@ -57,5 +71,7 @@ module.exports = {
   MONTHS,
   StringValue,
   NumberValue,
-  FormulaValue
+  BooleanValue,
+  FormulaValue,
+  formatLogDate
 };

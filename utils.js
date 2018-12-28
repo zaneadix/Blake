@@ -1,13 +1,18 @@
-const logFormat = /^(\w[\w\s]*)\s*for\s*((\d*)\s*?([a-z]+))(\s*on\s*((\d{1,2})\/(\d{1,2})(\/(\d{2}))?))?/i;
-const imageExts = /\.(jpg?g|tiff|png)$/i;
 const timeUnits = ["min", "mins", "minutes", "hr", "hrs", "hour", "hours"];
 
+const MATCHERS = {
+  LOG_FORMAT: /^(\w[\w\s]*)\s*for\s*((\d*)\s*?([a-z]+))(\s*on\s*((\d*)\/(\d*)(\/(\d*))?))?/i,
+  IMAGE_EXTS: /\.(jpg?g|tiff|png)$/i,
+  MINUTE: /min|mins|minutes/,
+  HOUR: /hr|hrs|hour|hours/
+};
+
 const isLog = content => {
-  return logFormat.test(content);
+  return MATCHERS.LOG_FORMAT.test(content);
 };
 
 const getLogValues = content => {
-  let [, e, , t, tU, , dt, m, dy, , y] = logFormat.exec(content);
+  let [, e, , t, tU, , dt, m, dy, , y] = MATCHERS.LOG_FORMAT.exec(content);
   return {
     date: dt,
     day: dy,
@@ -21,7 +26,7 @@ const getLogValues = content => {
 
 module.exports = {
   isLog,
-  imageExts,
   timeUnits,
-  getLogValues
+  getLogValues,
+  MATCHERS
 };

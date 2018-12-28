@@ -1,5 +1,11 @@
 const formatDate = require("date-fns/format");
-const { StringValue, NumberValue, FormulaValue } = require("./utils");
+const {
+  StringValue,
+  NumberValue,
+  BooleanValue,
+  FormulaValue,
+  formatLogDate
+} = require("./utils");
 
 class AddRowRequest {
   constructor(sheetId, values) {
@@ -39,50 +45,66 @@ module.exports = (
   workoutLog,
   tallyData,
   month,
-  userName,
+  user,
   exercise,
   duration,
-  date
+  date,
+  logTime,
+  firstOfDay,
+  imageURL
 ) => {
   // Find the row of the current user
   let monthNumber = parseInt(formatDate(date, "M"), 10);
   let tallyRequest;
   let tallyRow = 0;
+  let requests = [];
   let userRow = tallyData.find(row => {
     tallyRow++;
-    return row[0] === userName;
+    return row[0] === user.id;
   });
 
-  if (userRow) {
-    let currentValue = userRow[monthNumber];
-    tallyRequest = new UpdateCellRequest(
-      workoutLog.sheets["Tally"],
-      tallyRow - 1,
-      monthNumber,
-      new NumberValue(currentValue ? parseInt(currentValue, 10) + 1 : 1)
+  // Tally only if this is the first workout of the day
+  if (userRow && firstOfDay) {
+    let column = monthNumber + 1; // add 1 to month number for userID and username offset
+    let currentValue = userRow[column];
+    requests.push(
+      new UpdateCellRequest(
+        workoutLog.sheets["Tally"],
+        tallyRow - 1,
+        column,
+        new NumberValue(currentValue ? parseInt(currentValue, 10) + 1 : 1)
+      )
     );
-  } else {
+  }
+
+  // Add row if it doesn't exists
+  if (!userRow) {
     ++tallyRow;
-    let rowData = [new StringValue(userName)];
+    let rowData = [new StringValue(user.id), new StringValue(user.username)];
     for (let i = 0; i < 12; i++) {
       rowData.push(new NumberValue(i === monthNumber - 1 ? 1 : 0));
     }
     rowData.push(new FormulaValue(`=SUM(B${tallyRow}:M${tallyRow})`));
-    tallyRequest = new AddRowRequest(workoutLog.sheets["Tally"], rowData);
+    requests.push(new AddRowRequest(workoutLog.sheets["Tally"], rowData));
   }
+
+  requests.push(
+    new AddRowRequest(workoutLog.sheets[month], [
+      new StringValue(user.id),
+      new StringValue(user.username),
+      new StringValue(exercise),
+      new StringValue(duration),
+      new StringValue(formatLogDate(date)),
+      imageURL
+        ? new FormulaValue(`=HYPERLINK("${imageURL}", "Hover To View")`)
+        : new StringValue(""),
+      new StringValue(firstOfDay ? "yes" : "no"),
+      new StringValue(logTime)
+    ])
+  );
 
   return {
     spreadsheetId: workoutLog.id,
-    resource: {
-      requests: [
-        tallyRequest,
-        new AddRowRequest(workoutLog.sheets[month], [
-          new StringValue(userName),
-          new StringValue(formatDate(date || Date.now(), "MMM D")),
-          new StringValue(duration),
-          new StringValue(exercise)
-        ])
-      ]
-    }
+    resource: { requests }
   };
 };

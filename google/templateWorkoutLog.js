@@ -10,7 +10,8 @@ class TallySheet {
         rowData: [
           {
             values: [
-              new StringValue(""),
+              new StringValue("ID"),
+              new StringValue("Member"),
               ...MONTHS.map(month => new StringValue(month)),
               new StringValue("Total")
             ]
@@ -31,10 +32,14 @@ class LogSheet {
         rowData: [
           {
             values: [
-              new StringValue("Name"),
-              new StringValue("Date"),
+              new StringValue("ID"),
+              new StringValue("Member"),
+              new StringValue("Exercise"),
               new StringValue("Duration"),
-              new StringValue("Exercise")
+              new StringValue("Date"),
+              new StringValue("Picture"),
+              new StringValue("First of Day"),
+              new StringValue("Log Time")
             ]
           }
         ]

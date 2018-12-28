@@ -7,7 +7,16 @@ const getWorkoutLog = require("./getWorkoutLog");
 const templateLogWorkout = require("./templateLogWorkout");
 
 let directoryID = process.env.TFC_DIRECTORY_ID;
-// let names = ["Steven", "McFarts", "Borsin", "Charlie", "Angela", "Dracula"];
+
+// FOR TESTING
+// let users = [
+//   { id: "a111", username: "Steven" },
+//   { id: "a112", username: "McFarts" },
+//   { id: "a113", username: "Borsin" },
+//   { id: "a114", username: "Thomas" },
+//   { id: "a115", username: "Angela" },
+//   { id: "a116", username: "Florence" }
+// ];
 
 let g = {
   drive: google.drive({ version: "v3" }),
@@ -40,7 +49,8 @@ const tallyWorkout = async ({
     throw error;
   }
 
-  // userName = names[Math.floor(Math.random() * names.length)];
+  // FOR TESTING
+  // user = users[Math.floor(Math.random() * users.length)];
 
   // Fetch the current data set for tallies and logs
   let tallyData, logData;

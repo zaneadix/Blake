@@ -27,8 +27,34 @@ const MONTHS = [
   "Dec"
 ];
 
+const makeColumns = keys => {
+  let columns = {};
+  keys.forEach((col, index) => {
+    columns[col.toUpperCase()] = index;
+  });
+  return columns;
+};
+
+const TALLY_COLUMNS = makeColumns(["ID", "MEMBER", ...MONTHS, "TOTAL"]);
+const LOG_COLUMNS = makeColumns([
+  "ID",
+  "MEMBER",
+  "EXERCISE",
+  "DURATION",
+  "DATE",
+  "PICTURE",
+  "FIRST_OF_DAY",
+  "LOG_TIME"
+]);
+
 const formatLogDate = date => {
   return formatDate(date || Date.now(), "MMM D");
+};
+
+//from 0;
+const letterFromNumber = number => {
+  let letter = String.fromCharCode(65 + number);
+  return letter;
 };
 
 class StringValue {
@@ -69,9 +95,12 @@ module.exports = {
     WHITE
   },
   MONTHS,
+  LOG_COLUMNS,
+  TALLY_COLUMNS,
   StringValue,
   NumberValue,
   BooleanValue,
   FormulaValue,
-  formatLogDate
+  formatLogDate,
+  letterFromNumber
 };

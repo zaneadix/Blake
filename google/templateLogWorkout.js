@@ -1,10 +1,10 @@
-const formatDate = require("date-fns/format");
 const {
   StringValue,
   NumberValue,
-  BooleanValue,
   FormulaValue,
-  formatLogDate
+  formatLogDate,
+  letterFromNumber,
+  TALLY_COLUMNS
 } = require("./utils");
 
 class AddRowRequest {
@@ -54,8 +54,6 @@ module.exports = (
   imageURL
 ) => {
   // Find the row of the current user
-  let monthNumber = parseInt(formatDate(date, "M"), 10);
-  let tallyRequest;
   let tallyRow = 0;
   let requests = [];
   let userRow = tallyData.find(row => {
@@ -65,7 +63,7 @@ module.exports = (
 
   // Tally only if this is the first workout of the day
   if (userRow && firstOfDay) {
-    let column = monthNumber + 1; // add 1 to month number for userID and username offset
+    let column = TALLY_COLUMNS[month.toUpperCase()];
     let currentValue = userRow[column];
     requests.push(
       new UpdateCellRequest(
@@ -81,10 +79,19 @@ module.exports = (
   if (!userRow) {
     ++tallyRow;
     let rowData = [new StringValue(user.id), new StringValue(user.username)];
-    for (let i = 0; i < 12; i++) {
-      rowData.push(new NumberValue(i === monthNumber - 1 ? 1 : 0));
+
+    for (let i = TALLY_COLUMNS.JAN; i <= TALLY_COLUMNS.DEC; i++) {
+      rowData.push(
+        new NumberValue(i === TALLY_COLUMNS[month.toUpperCase()] ? 1 : 0)
+      );
     }
-    rowData.push(new FormulaValue(`=SUM(B${tallyRow}:M${tallyRow})`));
+
+    let col1 = letterFromNumber(TALLY_COLUMNS.JAN);
+    let col2 = letterFromNumber(TALLY_COLUMNS.DEC);
+    rowData.push(
+      new FormulaValue(`=SUM(${col1}${tallyRow}:${col2}${tallyRow})`)
+    );
+
     requests.push(new AddRowRequest(workoutLog.sheets["Tally"], rowData));
   }
 

@@ -1,7 +1,7 @@
 const { google } = require("googleapis");
 const formatDate = require("date-fns/format");
 
-const { formatLogDate } = require("./utils");
+const { formatLogDate, LOG_COLUMNS } = require("./utils");
 const authorize = require("./authorize");
 const getWorkoutLog = require("./getWorkoutLog");
 const templateLogWorkout = require("./templateLogWorkout");
@@ -37,14 +37,12 @@ const tallyWorkout = async ({
   try {
     workoutLog = await getWorkoutLog(g, directoryID, year, month);
   } catch (error) {
-    // console.log("Failed to retrieve workout log");
     throw error;
   }
 
   // userName = names[Math.floor(Math.random() * names.length)];
 
-  // Get tally data for updating
-
+  // Fetch the current data set for tallies and logs
   let tallyData, logData;
   try {
     await g.sheets.spreadsheets.values
@@ -62,25 +60,17 @@ const tallyWorkout = async ({
     throw new Error("Failed to retrieve spreadsheet values");
   }
 
-  // let tallyData, logData;
-  // await g.sheets.spreadsheets.values
-  //   .batchGet({
-  //     spreadsheetId: workoutLog.id,
-  //     ranges: ["Tally", month],
-  //     majorDimension: "ROWS"
-  //   })
-  //   .then(({ data }) => {
-  //     tallyData = data.valueRanges[0].values;
-  //     logData = data.valueRanges[1].values;
-  //   })
-  //   .catch(error => console.log(error));
-
+  // See if anythoing else was already logged today by this user
   if (logData) {
     firstOfDay = !logData.find(row => {
-      return row[0] === user.id && row[4] === formatLogDate(date);
+      return (
+        row[LOG_COLUMNS.ID] === user.id &&
+        row[LOG_COLUMNS.DATE] === formatLogDate(date)
+      );
     });
   }
 
+  // Perform update
   if (tallyData) {
     try {
       await g.sheets.spreadsheets

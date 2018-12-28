@@ -1,4 +1,4 @@
-const { COLORS, MONTHS } = require("./utils");
+const { COLORS, MONTHS, LOG_COLUMNS, TALLY_COLUMNS } = require("./utils");
 
 const buildHeader = (sheetId, start, end, columnWidths, frozenColumns) => {
   return [
@@ -75,9 +75,18 @@ module.exports = workoutLog => {
       0,
       15,
       [
-        { start: 0, end: 1, width: 0, hidden: true },
-        { start: 1, end: 2, width: 100 },
-        { start: 2, end: 15, width: 80 }
+        {
+          start: TALLY_COLUMNS.ID,
+          end: TALLY_COLUMNS.ID + 1,
+          width: 0,
+          hidden: true
+        },
+        {
+          start: TALLY_COLUMNS.MEMBER,
+          end: TALLY_COLUMNS.MEMBER + 1,
+          width: 100
+        },
+        { start: TALLY_COLUMNS.JAN, end: TALLY_COLUMNS.TOTAL + 1, width: 80 }
       ],
       2 //frozen columns
     )
@@ -86,14 +95,32 @@ module.exports = workoutLog => {
     requests = [
       ...requests,
       ...buildHeader(workoutLog.sheets[month], 0, 8, [
-        { start: 0, end: 1, width: 0, hidden: true }, // ID
-        { start: 1, end: 2, width: 100 }, // member
-        { start: 2, end: 3, width: 250 }, // exercise
-        { start: 3, end: 7, width: 120 }, // duration, date, picture, first of day
-        { start: 7, end: 8, width: 140 } // log time
+        {
+          start: LOG_COLUMNS.ID,
+          end: LOG_COLUMNS.ID + 1,
+          width: 0,
+          hidden: true
+        },
+        { start: LOG_COLUMNS.MEMBER, end: LOG_COLUMNS.MEMBER + 1, width: 120 },
+        {
+          start: LOG_COLUMNS.EXERCISE,
+          end: LOG_COLUMNS.EXERCISE + 1,
+          width: 250
+        },
+        {
+          start: LOG_COLUMNS.DURATION,
+          end: LOG_COLUMNS.FIRST_OF_DAY,
+          width: 120
+        },
+        {
+          start: LOG_COLUMNS.FIRST_OF_DAY,
+          end: LOG_COLUMNS.LOG_TIME + 1,
+          width: 140
+        }
       ])
     ];
   });
+
   return {
     spreadsheetId: workoutLog.id,
     resource: {

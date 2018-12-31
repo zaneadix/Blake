@@ -47,5 +47,6 @@ Once I've reviewed your log submission and found it's free of funny business, I'
 ### TODO
 
 - Interval updates
-  - Weekly Status
-  - Monthly Status
+  - Post Status updates to the `general` channel
+    - Weekly Status
+    - Monthly Status

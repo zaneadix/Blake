@@ -5,7 +5,12 @@ const isAfter = require("date-fns/is_after");
 const isBefore = require("date-fns/is_before");
 const calendarMonthsDiff = require("date-fns/difference_in_calendar_months");
 
-const { formatLogDate, currentTimeZone, LOG_COLUMNS } = require("../utils");
+const {
+  formatLogDate,
+  currentTimeZone,
+  LOG_COLUMNS,
+  TALLY_COLUMNS
+} = require("../utils");
 const authorize = require("./authorize");
 const getWorkoutLog = require("./getWorkoutLog");
 const templateLogWorkout = require("./templateLogWorkout");
@@ -35,6 +40,10 @@ const initializeClients = async () => {
 };
 initializeClients();
 
+/**
+ * Get full sheet data for tallies
+ * and a set of months
+ */
 const fetchData = async (workoutLog, months) => {
   let result;
   try {
@@ -55,11 +64,18 @@ const fetchData = async (workoutLog, months) => {
   return result;
 };
 
+/**
+ * Within a range of two dates (exclusive), get
+ * - Days worked out
+ * - Workouts Logged
+ * As well as
+ * - Total workouts for the year
+ */
 const getWorkoutCounts = async (fromDate, toDate) => {
   // await initializeClients();
   let date = currentTimeZone();
   let year = date.getFullYear();
-  let workoutLog;
+  let workoutLog, tallyData;
 
   try {
     workoutLog = await getWorkoutLog(g, directoryID, year);
@@ -77,7 +93,7 @@ const getWorkoutCounts = async (fromDate, toDate) => {
   let dataSets;
   try {
     dataSets = await fetchData(workoutLog, months);
-    dataSets.shift(); //no need for tallies as of yet
+    tallyData = dataSets.shift(); //no need for tallies as of yet
   } catch (error) {
     throw error;
   }
@@ -99,7 +115,8 @@ const getWorkoutCounts = async (fromDate, toDate) => {
         memberMap[member] = memberMap[member] || {
           username: "",
           workoutsLogged: 0,
-          daysWorkedOut: 0
+          daysWorkedOut: 0,
+          yearTotal: 0
         };
 
         memberMap[member].workoutsLogged++;
@@ -111,6 +128,13 @@ const getWorkoutCounts = async (fromDate, toDate) => {
           memberMap[member].daysWorkedOut++;
       }
     });
+  });
+
+  tallyData.values.forEach(row => {
+    let id = row[TALLY_COLUMNS.ID];
+    if (memberMap[id]) {
+      memberMap[id].yearTotal = parseInt(row[TALLY_COLUMNS.TOTAL]);
+    }
   });
 
   return memberMap;

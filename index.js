@@ -4,7 +4,6 @@ var AsciiTable = require("ascii-table");
 const dayIsAfter = require("date-fns/is_after");
 const differenceInDays = require("date-fns/difference_in_days");
 const formatDate = require("date-fns/format");
-// const subWeeks = require("date-fns/sub_weeks");
 const addDays = require("date-fns/add_days");
 const subDays = require("date-fns/sub_days");
 
@@ -17,6 +16,7 @@ const {
   MATCHERS,
   SUBMISSION_WINDOW
 } = require("./utils");
+const GUILD_ID = process.env.TFC_GUILD;
 
 /**
  * Set East Coast TimeZone
@@ -40,6 +40,15 @@ const logResponse = (message, feedback, success = false) => {
   }
 };
 
+const getChannel = channelName => {
+  let guild = client.guilds.get(GUILD_ID);
+  let channel;
+  if (guild) {
+    channel = guild.channels.find(channel => channel.name === channelName);
+  }
+  return channel;
+};
+
 client
   .login(authToken)
   .then(() => {})
@@ -47,15 +56,12 @@ client
 
 client.on("ready", () => {
   // console.log(client.guilds);
-  // console.log(client.user.username, "is up and running.");
+  console.log(client.user.username, "is up and running.");
 });
 
 client.on("message", async message => {
   let { attachments, author, channel, content, guild, member } = message;
   if (author.bot) return;
-
-  // console.log(guild);
-  // console.log(member.roles);
 
   let image;
   if (attachments.size) {
@@ -117,7 +123,7 @@ client.on("message", async message => {
         return;
       }
 
-      date = currentTimeZone(new Date(year, month - 1, day));
+      date = new Date(year, month - 1, day);
       if (dayIsAfter(date, currentTimeZone())) {
         logResponse(
           message,
@@ -146,7 +152,6 @@ client.on("message", async message => {
         imageURL: image && image.url
       });
     } catch (error) {
-      console.log("CAUGHT AT THE TOP!!!", error);
       logResponse(
         message,
         `Oh crap, ${author}! I tried to log your workout but got this error. **${
@@ -190,25 +195,49 @@ client.on("message", async message => {
  * FROM: 8 days ago
  * TO: Today at 00:00;
  */
-// const weekleyResult = schedule.scheduleJob("*/10 * * * * *", async () => {
-//   console.log("getting weekley results");
-//   let to = currentTimeZone(new Date().setHours(0, 0, 0, 0));
-//   let from = subDays(to, 8);
+const weekleyResult = schedule.scheduleJob("* 8 * * 1", async () => {
+  // const weekleyResult = schedule.scheduleJob("*/10 * * * * *", async () => {
+  // TESTING
+  // console.log("getting weekley results");
+  let to = currentTimeZone(new Date().setHours(0, 0, 0, 0));
+  let from = subDays(to, 8);
 
-//   let counts = await g.getWorkoutCounts(from, to);
-//   let table = new AsciiTable(
-//     `Workout Summary: Week of ${formatDate(addDays(from, 1), "MMM D")}`
-//   );
+  let counts;
+  try {
+    counts = await g.getWorkoutCounts(from, to);
+  } catch (error) {
+    console.log("Failed to get weekley results");
+    console.log(error);
+    return;
+  }
 
-//   table.setHeading("Member", "Days Worked Out", "Workouts Logged");
+  let table = new AsciiTable(
+    `Week of ${formatDate(addDays(from, 1), "MMM D")}`
+  );
+  table.setHeading("Member", "Logged", "Days", "Year");
 
-//   Object.keys(counts).forEach(id => {
-//     let row = counts[id];
-//     table.addRow(row.username, row.daysWorkedOut, row.workoutsLogged);
-//   });
+  Object.keys(counts).forEach(id => {
+    let row = counts[id];
+    table.addRow(
+      row.username,
+      row.workoutsLogged,
+      row.daysWorkedOut,
+      row.yearTotal
+    );
+  });
 
-//   console.log(table.toString());
-// });
+  let channel = getChannel("general");
+
+  let message = `
+  Hey, Tranquili-nerds! Here's your weekley workout summary.
+  **Logged** - Total workouts logged this week.
+  **Days** - Total days worked out this week.
+  **Year** - Total days worked out this year`;
+
+  if (channel) {
+    channel.send(message + "```" + table + "```");
+  }
+});
 
 /**
  * First day of every month

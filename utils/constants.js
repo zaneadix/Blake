@@ -12,7 +12,7 @@ const COLORS = {
 };
 
 const MATCHERS = {
-  LOG_FORMAT: /^(\w[\w\s]*)\s*for\s*((\d*)\s*?([a-z]+))(\s*on\s*((\d*)\/(\d*)(\/(\d*))?))?/i,
+  LOG_FORMAT: /(\w['\w\s]*)\s*for\s*((\d*)\s*?([a-z]+))(\s*on\s*((\d*)\/(\d*)(\/(\d*))?))?/i,
   IMAGE_EXTS: /\.(jpg?g|tiff|png)$/i,
   MINUTE: /min|mins|minutes/,
   HOUR: /hr|hrs|hour|hours/

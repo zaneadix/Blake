@@ -1,26 +1,30 @@
 const Discord = require("discord.js");
-const g = require("./google");
-const {
-  isLog,
-  imageExts,
-  timeUnits,
-  getLogValues,
-  MATCHERS
-} = require("./utils");
+const schedule = require("node-schedule");
+var AsciiTable = require("ascii-table");
 const dayIsAfter = require("date-fns/is_after");
 const differenceInDays = require("date-fns/difference_in_days");
 const formatDate = require("date-fns/format");
+// const subWeeks = require("date-fns/sub_weeks");
+const addDays = require("date-fns/add_days");
+const subDays = require("date-fns/sub_days");
+
+const g = require("./google");
+const {
+  isLog,
+  timeUnits,
+  getLogValues,
+  currentTimeZone,
+  MATCHERS,
+  SUBMISSION_WINDOW
+} = require("./utils");
+
+/**
+ * Set East Coast TimeZone
+ */
+process.env.TZ = "America/New_York";
 
 let authToken = process.env.DISCORD_TOKEN;
 let client = new Discord.Client();
-let submissionWindow = 7;
-// let logBuffer = {};
-
-/**
- * TODO
- * * WORK ON DATE PARSING
- * * API ERROR HANDLING
- */
 
 const logResponse = (message, feedback, success = false) => {
   message
@@ -36,12 +40,13 @@ const logResponse = (message, feedback, success = false) => {
   }
 };
 
-client
-  .login(authToken)
-  .then(() => {})
-  .catch(error => console.error(error));
+// client
+//   .login(authToken)
+//   .then(() => {})
+//   .catch(error => console.error(error));
 
 client.on("ready", () => {
+  console.log(client.guilds);
   console.log(client.user.username, "is up and running.");
 });
 
@@ -101,6 +106,8 @@ client.on("message", async message => {
         return;
       }
 
+      // Month without -1 puts it into next month
+      // Day set to zero brings it back to last day of current month;
       let dayCount = new Date(year, month, 0).getDate();
       if (!(day >= 1 && day <= dayCount)) {
         logResponse(
@@ -110,15 +117,15 @@ client.on("message", async message => {
         return;
       }
 
-      date = new Date(year, month - 1, day);
-      if (dayIsAfter(date, new Date())) {
+      date = currentTimeZone(new Date(year, month - 1, day));
+      if (dayIsAfter(date, currentTimeZone())) {
         logResponse(
           message,
           `Date alert, ${author}! The date you entered is in the future. Quit horsin' around!`
         );
         return;
       }
-      if (differenceInDays(new Date(), date) > submissionWindow) {
+      if (differenceInDays(currentTimeZone(), date) > SUBMISSION_WINDOW) {
         logResponse(
           message,
           `Date alert, ${author}! The date you entered is outside the ${submissionWindow} day window. Please contact an admin to have your workout logged manually.`
@@ -127,7 +134,7 @@ client.on("message", async message => {
       }
     }
 
-    date = date || new Date(); //default date is today
+    date = date || currentTimeZone(); //default date is today
 
     try {
       await g.tallyWorkout({
@@ -135,7 +142,7 @@ client.on("message", async message => {
         exercise,
         duration: `${time} ${timeUnit}`,
         date,
-        logTime: formatDate(Date.now(), "M-D-YY h:mma"),
+        logTime: formatDate(currentTimeZone(), "M-D-YY h:mm:sa"),
         imageURL: image && image.url
       });
     } catch (error) {
@@ -160,3 +167,60 @@ client.on("message", async message => {
     message.reply("yes?");
   }
 });
+
+/**
+  JOBS
+ 
+  *    *    *    *    *    *
+  ┬    ┬    ┬    ┬    ┬    ┬
+  │    │    │    │    │    │
+  │    │    │    │    │    └ day of week (0 - 7) (0 or 7 is Sun)
+  │    │    │    │    └───── month (1 - 12)
+  │    │    │    └────────── day of month (1 - 31)
+  │    │    └─────────────── hour (0 - 23)
+  │    └──────────────────── minute (0 - 59)
+  └───────────────────────── second (0 - 59, OPTIONAL)
+
+ */
+
+/**
+ * Every Monday at 8am
+ * I'm looking for workouts between (exclusive)
+ * last Sunday and today (Monday)...
+ * FROM: 8 days ago
+ * TO: Today at 00:00;
+ */
+// const weekleyResult = schedule.scheduleJob("*/10 * * * * *", async () => {
+//   console.log("getting weekley results");
+//   let to = currentTimeZone(new Date().setHours(0, 0, 0, 0));
+//   let from = subDays(to, 8);
+
+//   let counts = await g.getWorkoutCounts(from, to);
+//   let table = new AsciiTable(
+//     `Workout Summary: Week of ${formatDate(addDays(from, 1), "MMM D")}`
+//   );
+
+//   table.setHeading("Member", "Days Worked Out", "Workouts Logged");
+
+//   Object.keys(counts).forEach(id => {
+//     let row = counts[id];
+//     table.addRow(row.username, row.daysWorkedOut, row.workoutsLogged);
+//   });
+
+//   console.log(table.toString());
+// });
+
+/**
+ * First day of every month
+ * I'm looking for workouts between (exclusive)
+ * last Sunday and today (Monday)...
+ * FROM: 8 days ago
+ * TO: Today at 00:00;
+ */
+// const monthlyResult = schedule.scheduleJob("* * 1 * *", () => {
+//   console.log("getting weekley results");
+// });
+
+// let to = currentTimeZone(new Date().setHours(0, 0, 0, 0));
+// let from = subDays(to, 8);
+// g.getWorkoutCounts(from, to);

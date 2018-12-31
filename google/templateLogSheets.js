@@ -1,4 +1,4 @@
-const { COLORS, MONTHS, LOG_COLUMNS, TALLY_COLUMNS } = require("./utils");
+const { COLORS, MONTHS, LOG_COLUMNS, TALLY_COLUMNS } = require("../utils");
 
 const buildHeader = (sheetId, start, end, columnWidths, frozenColumns) => {
   return [

@@ -5,7 +5,7 @@ const {
   formatLogDate,
   letterFromNumber,
   TALLY_COLUMNS
-} = require("./utils");
+} = require("../utils");
 
 class AddRowRequest {
   constructor(sheetId, values) {

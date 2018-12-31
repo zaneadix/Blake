@@ -1,4 +1,4 @@
-const { MONTHS, StringValue } = require("./utils");
+const { MONTHS, StringValue } = require("../utils");
 
 class TallySheet {
   constructor() {

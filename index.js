@@ -87,7 +87,7 @@ client.on("message", async message => {
     } else {
       logResponse(
         message,
-        `Sorry, ${author}! The time unit you entered (*${timeUnit}*) isn't one I know. Make sure to use one of these: *${TIME_UNITS.join(
+        `Sorry, ${author}! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
           ", "
         )}*`
       );
@@ -107,7 +107,7 @@ client.on("message", async message => {
       if (!/\d{4}/.test(year)) {
         logResponse(
           message,
-          `Quit goofin' off, ${author}! It's definitely not the year ${year}*.`
+          `Quit goofin' off, ${author}! It's definitely not the year ${year}.`
         );
         return;
       }
@@ -134,7 +134,7 @@ client.on("message", async message => {
       if (differenceInDays(currentTimeZone(), date) > SUBMISSION_WINDOW) {
         logResponse(
           message,
-          `Date alert, ${author}! The date you entered is outside the ${submissionWindow} day window. Please contact an admin to have your workout logged manually.`
+          `Date alert, ${author}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`
         );
         return;
       }

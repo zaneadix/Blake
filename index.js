@@ -10,11 +10,11 @@ const subDays = require("date-fns/sub_days");
 const g = require("./google");
 const {
   isLog,
-  timeUnits,
   getLogValues,
   currentTimeZone,
   MATCHERS,
-  SUBMISSION_WINDOW
+  SUBMISSION_WINDOW,
+  TIME_UNITS
 } = require("./utils");
 const GUILD_ID = process.env.TFC_GUILD;
 
@@ -87,7 +87,7 @@ client.on("message", async message => {
     } else {
       logResponse(
         message,
-        `Sorry, ${author}! The time unit you entered (*${timeUnit}*) isn't one I know. Make sure to use one of these: *${timeUnits.join(
+        `Sorry, ${author}! The time unit you entered (*${timeUnit}*) isn't one I know. Make sure to use one of these: *${TIME_UNITS.join(
           ", "
         )}*`
       );

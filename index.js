@@ -46,8 +46,8 @@ client
   .catch(error => console.error(error));
 
 client.on("ready", () => {
-  console.log(client.guilds);
-  console.log(client.user.username, "is up and running.");
+  // console.log(client.guilds);
+  // console.log(client.user.username, "is up and running.");
 });
 
 client.on("message", async message => {

@@ -40,10 +40,10 @@ const logResponse = (message, feedback, success = false) => {
   }
 };
 
-// client
-//   .login(authToken)
-//   .then(() => {})
-//   .catch(error => console.error(error));
+client
+  .login(authToken)
+  .then(() => {})
+  .catch(error => console.error(error));
 
 client.on("ready", () => {
   console.log(client.guilds);

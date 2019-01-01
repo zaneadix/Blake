@@ -1,13 +1,13 @@
 const Discord = require("discord.js");
 const schedule = require("node-schedule");
-const AsciiTable = require("ascii-table");
+const { table } = require("table");
 const _uniq = require("lodash/uniq");
 const dayIsAfter = require("date-fns/is_after");
 const differenceInDays = require("date-fns/difference_in_days");
 const formatDate = require("date-fns/format");
-const addDays = require("date-fns/add_days");
+// const addDays = require("date-fns/add_days");
 const subDays = require("date-fns/sub_days");
-const subMonths = require("date-fns/sub_months");
+// const subMonths = require("date-fns/sub_months");
 
 const g = require("./google");
 const {
@@ -242,50 +242,56 @@ client.on("message", async message => {
  * FROM: 8 days ago
  * TO: Today at 00:00;
  */
-// const weekleyResult = schedule.scheduleJob("* 8 * * 1", async () => {
-//   // TESTING
-//   // const weekleyResult = schedule.scheduleJob("*/8 * * * * *", async () => {
-//   console.log("getting WEEKLEY results");
+const weekleyResult = schedule.scheduleJob("* 8 * * 1", async () => {
+  let to = flatDate();
+  let from = subDays(to, 8);
+  let counts;
 
-//   let to = flatDate(); // currentTimeZone(new Date().setHours(0, 0, 0, 0)); //testing
-//   let from = subDays(to, 8);
-//   let counts;
+  try {
+    counts = await g.getWorkoutCounts(from, to);
+  } catch (error) {
+    console.log("Failed to get weekley results");
+    console.log(error);
+    return;
+  }
 
-//   try {
-//     counts = await g.getWorkoutCounts(from, to);
-//   } catch (error) {
-//     console.log("Failed to get weekley results");
-//     console.log(error);
-//     return;
-//   }
+  let data = [];
+  Object.keys(counts).forEach(id => {
+    let row = counts[id];
+    data.push([
+      row.username,
+      row.workoutsLogged,
+      row.daysWorkedOut,
+      row.yearTotal
+    ]);
+  });
+  data.sort((a, b) => b[2] - a[2]);
+  data.unshift(["Member", "Logged", "Days", "Year"]);
 
-//   let table = new AsciiTable(
-//     `Week of ${formatDate(addDays(from, 1), "MMM D")}`
-//   );
-//   table.setHeading("Member", "Logged", "Days", "Year");
+  let output = table(data, {
+    columns: {
+      0: { truncate: 13 }
+    }
+  });
 
-//   Object.keys(counts).forEach(id => {
-//     let row = counts[id];
-//     table.addRow(
-//       row.username,
-//       row.workoutsLogged,
-//       row.daysWorkedOut,
-//       row.yearTotal
-//     );
-//   });
+  let message = `
+Hey, Tranquili-nerds! I've prepared your summary for:
 
-//   let channel = getChannel("general");
+**The Week of ${formatDate(from, "MMM Do")}**
 
-//   let message = `
-//   Hey, Tranquili-nerds! Here's your weekley workout summary.
-//   **Logged** - Total workouts logged this week.
-//   **Days** - Total days worked out this week.
-//   **Year** - Total days worked out this year`;
+Take a look and make sure every workout you've done is accounted for.
+If something seems off, be sure to get in touch with an admin.
+We wouldn't want any of your hard work slipping through the cracks!
 
-//   if (channel) {
-//     channel.send(message + "```" + table + "```");
-//   }
-// });
+*Logged* - Total workouts logged this week.
+*Days* - Total days worked out this week.
+*Year* - Total days worked out this year`;
+
+  let channel = getChannel("general");
+  if (channel) {
+    channel.send(message + "```" + output.toString() + "```");
+  }
+});
 
 /**
  * First day of every month
@@ -298,11 +304,9 @@ client.on("message", async message => {
 //   // TESTING
 //   // const monthlyResult = schedule.scheduleJob("*/5 * * * * *", async () => {
 //   console.log("getting MONTHLY results");
-//   let to = flatDate(); //addMonths(flatDate(), 1); //testing
+//   let to = flatDate();
 //   let from = subDays(subMonths(to, 1), 1);
 //   let counts;
-
-//   console.log("MONTHLY", from, to);
 
 //   try {
 //     counts = await g.getWorkoutCounts(from, to);

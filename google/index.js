@@ -7,7 +7,7 @@ const calendarMonthsDiff = require("date-fns/difference_in_calendar_months");
 
 const {
   formatLogDate,
-  currentTimeZone,
+  flatDate,
   LOG_COLUMNS,
   TALLY_COLUMNS
 } = require("../utils");
@@ -72,8 +72,7 @@ const fetchData = async (workoutLog, months) => {
  * - Total workouts for the year
  */
 const getWorkoutCounts = async (fromDate, toDate) => {
-  // await initializeClients();
-  let date = currentTimeZone();
+  let date = flatDate(); //currentTimeZone();
   let year = date.getFullYear();
   let workoutLog, tallyData;
 
@@ -104,13 +103,14 @@ const getWorkoutCounts = async (fromDate, toDate) => {
     values.shift();
     values.map(row => {
       let dateValue = `${row[LOG_COLUMNS.DATE]} ${year}`; // MMM DD YYYY
-      dateMap[dateValue] =
-        dateMap[dateValue] || currentTimeZone(new Date(dateValue));
+      dateMap[dateValue] = dateMap[dateValue] || flatDate(new Date(dateValue)); //currentTimeZone(new Date(dateValue));
+      console.log(dateMap[dateValue]);
 
       if (
         isAfter(dateMap[dateValue], fromDate) &&
         isBefore(dateMap[dateValue], toDate)
       ) {
+        console.log(dateValue, "IS GOOD");
         let member = row[LOG_COLUMNS.ID];
         memberMap[member] = memberMap[member] || {
           username: "",

@@ -1,11 +1,8 @@
 const formatDate = require("date-fns/format");
-const subMinutes = require("date-fns/sub_minutes");
 const { MATCHERS } = require("./constants");
-const tzOffset = new Date().getTimezoneOffset();
 
-const currentTimeZone = date => {
-  date = date || new Date();
-  return subMinutes(date, tzOffset);
+const flatDate = date => {
+  return new Date((date || new Date()).setHours(0, 0, 0, 0));
 };
 
 const formatLogDate = date => {
@@ -18,7 +15,7 @@ const getLogValues = content => {
     date: dt,
     day: dy,
     month: m,
-    year: y ? `20${y}` : "2018",
+    year: y ? `20${y}` : "2019",
     time: t,
     timeUnit: tU,
     exercise: e
@@ -38,7 +35,7 @@ const letterFromNumber = number => {
 module.exports = {
   isLog,
   formatLogDate,
+  flatDate,
   getLogValues,
-  currentTimeZone,
   letterFromNumber
 };

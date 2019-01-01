@@ -6,12 +6,13 @@ const differenceInDays = require("date-fns/difference_in_days");
 const formatDate = require("date-fns/format");
 const addDays = require("date-fns/add_days");
 const subDays = require("date-fns/sub_days");
+const subMonths = require("date-fns/sub_months");
 
 const g = require("./google");
 const {
-  isLog,
+  flatDate,
   getLogValues,
-  currentTimeZone,
+  isLog,
   MATCHERS,
   SUBMISSION_WINDOW,
   TIME_UNITS
@@ -28,7 +29,7 @@ let client = new Discord.Client();
 
 const logResponse = (message, feedback, success = false) => {
   message
-    .react(success ? "👍" : "❌")
+    .react(success ? "✅" : "❌")
     .then(() => {})
     .catch(error => console.log(error));
 
@@ -124,14 +125,17 @@ client.on("message", async message => {
       }
 
       date = new Date(year, month - 1, day);
-      if (dayIsAfter(date, currentTimeZone())) {
+      let after = flatDate();
+      console.log(date, "is after", after, dayIsAfter(date, flatDate()));
+      if (dayIsAfter(date, flatDate())) {
         logResponse(
           message,
           `Date alert, ${author}! The date you entered is in the future. Quit horsin' around!`
         );
         return;
       }
-      if (differenceInDays(currentTimeZone(), date) > SUBMISSION_WINDOW) {
+
+      if (differenceInDays(flatDate(), date) > SUBMISSION_WINDOW) {
         logResponse(
           message,
           `Date alert, ${author}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`
@@ -140,7 +144,11 @@ client.on("message", async message => {
       }
     }
 
-    date = date || currentTimeZone(); //default date is today
+    // may need current timezone?
+    date = date || flatDate(); //default date is today
+
+    console.log(date);
+    console.log(date.toString());
 
     try {
       await g.tallyWorkout({
@@ -148,7 +156,7 @@ client.on("message", async message => {
         exercise,
         duration: `${time} ${timeUnit}`,
         date,
-        logTime: formatDate(currentTimeZone(), "M-D-YY h:mm:sa"),
+        logTime: formatDate(new Date(), "M-D-YY h:mm:ssa"), // may need current timezone?
         imageURL: image && image.url
       });
     } catch (error) {
@@ -195,49 +203,50 @@ client.on("message", async message => {
  * FROM: 8 days ago
  * TO: Today at 00:00;
  */
-const weekleyResult = schedule.scheduleJob("* 8 * * 1", async () => {
-  // const weekleyResult = schedule.scheduleJob("*/10 * * * * *", async () => {
-  // TESTING
-  // console.log("getting weekley results");
-  let to = currentTimeZone(new Date().setHours(0, 0, 0, 0));
-  let from = subDays(to, 8);
+// const weekleyResult = schedule.scheduleJob("* 8 * * 1", async () => {
+//   // TESTING
+//   // const weekleyResult = schedule.scheduleJob("*/8 * * * * *", async () => {
+//   console.log("getting WEEKLEY results");
 
-  let counts;
-  try {
-    counts = await g.getWorkoutCounts(from, to);
-  } catch (error) {
-    console.log("Failed to get weekley results");
-    console.log(error);
-    return;
-  }
+//   let to = flatDate(); // currentTimeZone(new Date().setHours(0, 0, 0, 0)); //testing
+//   let from = subDays(to, 8);
+//   let counts;
 
-  let table = new AsciiTable(
-    `Week of ${formatDate(addDays(from, 1), "MMM D")}`
-  );
-  table.setHeading("Member", "Logged", "Days", "Year");
+//   try {
+//     counts = await g.getWorkoutCounts(from, to);
+//   } catch (error) {
+//     console.log("Failed to get weekley results");
+//     console.log(error);
+//     return;
+//   }
 
-  Object.keys(counts).forEach(id => {
-    let row = counts[id];
-    table.addRow(
-      row.username,
-      row.workoutsLogged,
-      row.daysWorkedOut,
-      row.yearTotal
-    );
-  });
+//   let table = new AsciiTable(
+//     `Week of ${formatDate(addDays(from, 1), "MMM D")}`
+//   );
+//   table.setHeading("Member", "Logged", "Days", "Year");
 
-  let channel = getChannel("general");
+//   Object.keys(counts).forEach(id => {
+//     let row = counts[id];
+//     table.addRow(
+//       row.username,
+//       row.workoutsLogged,
+//       row.daysWorkedOut,
+//       row.yearTotal
+//     );
+//   });
 
-  let message = `
-  Hey, Tranquili-nerds! Here's your weekley workout summary.
-  **Logged** - Total workouts logged this week.
-  **Days** - Total days worked out this week.
-  **Year** - Total days worked out this year`;
+//   let channel = getChannel("general");
 
-  if (channel) {
-    channel.send(message + "```" + table + "```");
-  }
-});
+//   let message = `
+//   Hey, Tranquili-nerds! Here's your weekley workout summary.
+//   **Logged** - Total workouts logged this week.
+//   **Days** - Total days worked out this week.
+//   **Year** - Total days worked out this year`;
+
+//   if (channel) {
+//     channel.send(message + "```" + table + "```");
+//   }
+// });
 
 /**
  * First day of every month
@@ -246,10 +255,46 @@ const weekleyResult = schedule.scheduleJob("* 8 * * 1", async () => {
  * FROM: 8 days ago
  * TO: Today at 00:00;
  */
-// const monthlyResult = schedule.scheduleJob("* * 1 * *", () => {
-//   console.log("getting weekley results");
-// });
+// const monthlyResult = schedule.scheduleJob("* 8 1 * *", async () => {
+//   // TESTING
+//   // const monthlyResult = schedule.scheduleJob("*/5 * * * * *", async () => {
+//   console.log("getting MONTHLY results");
+//   let to = flatDate(); //addMonths(flatDate(), 1); //testing
+//   let from = subDays(subMonths(to, 1), 1);
+//   let counts;
 
-// let to = currentTimeZone(new Date().setHours(0, 0, 0, 0));
-// let from = subDays(to, 8);
-// g.getWorkoutCounts(from, to);
+//   console.log("MONTHLY", from, to);
+
+//   try {
+//     counts = await g.getWorkoutCounts(from, to);
+//   } catch (error) {
+//     console.log("Failed to get weekley results");
+//     console.log(error);
+//     return;
+//   }
+
+//   let table = new AsciiTable(`${formatDate(from, "MMMM YYYY")}`);
+//   table.setHeading("Member", "Logged", "Days", "Year");
+
+//   Object.keys(counts).forEach(id => {
+//     let row = counts[id];
+//     table.addRow(
+//       row.username,
+//       row.workoutsLogged,
+//       row.daysWorkedOut,
+//       row.yearTotal
+//     );
+//   });
+
+//   let channel = getChannel("general");
+
+//   let message = `
+//   Hey, Tranquili-nerds! Here's your monthly workout summary.
+//   **Logged** - Total workouts logged this month.
+//   **Days** - Total days worked out this month.
+//   **Year** - Total days worked out this year`;
+
+//   if (channel) {
+//     channel.send(message + "```" + table + "```");
+//   }
+// });

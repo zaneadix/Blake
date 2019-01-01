@@ -1,9 +1,10 @@
 const {
   StringValue,
-  NumberValue,
   FormulaValue,
   formatLogDate,
   letterFromNumber,
+  MONTHS,
+  LOG_COLUMNS,
   TALLY_COLUMNS
 } = require("../utils");
 
@@ -61,30 +62,22 @@ module.exports = (
     return row[0] === user.id;
   });
 
-  // Tally only if this is the first workout of the day
-  if (userRow && firstOfDay) {
-    let column = TALLY_COLUMNS[month.toUpperCase()];
-    let currentValue = userRow[column];
-    requests.push(
-      new UpdateCellRequest(
-        workoutLog.sheets["Tally"],
-        tallyRow - 1,
-        column,
-        new NumberValue(currentValue ? parseInt(currentValue, 10) + 1 : 1)
-      )
-    );
-  }
-
   // Add row if it doesn't exists
   if (!userRow) {
     ++tallyRow;
     let rowData = [new StringValue(user.id), new StringValue(user.username)];
 
-    for (let i = TALLY_COLUMNS.JAN; i <= TALLY_COLUMNS.DEC; i++) {
+    // Create formula to tally from associated month sheet
+    let tallyId = letterFromNumber(TALLY_COLUMNS.ID);
+    let logId = letterFromNumber(LOG_COLUMNS.ID);
+    let logFirst = letterFromNumber(LOG_COLUMNS.FIRST_OF_DAY);
+    MONTHS.forEach(month => {
       rowData.push(
-        new NumberValue(i === TALLY_COLUMNS[month.toUpperCase()] ? 1 : 0)
+        new FormulaValue(
+          `=COUNTIFS(${month}!${logId}:${logId}, ${tallyId}${tallyRow}, ${month}!${logFirst}:${logFirst}, "yes")`
+        )
       );
-    }
+    });
 
     let col1 = letterFromNumber(TALLY_COLUMNS.JAN);
     let col2 = letterFromNumber(TALLY_COLUMNS.DEC);

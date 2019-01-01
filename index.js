@@ -125,8 +125,6 @@ client.on("message", async message => {
       }
 
       date = new Date(year, month - 1, day);
-      let after = flatDate();
-      console.log(date, "is after", after, dayIsAfter(date, flatDate()));
       if (dayIsAfter(date, flatDate())) {
         logResponse(
           message,
@@ -146,9 +144,6 @@ client.on("message", async message => {
 
     // may need current timezone?
     date = date || flatDate(); //default date is today
-
-    console.log(date);
-    console.log(date.toString());
 
     try {
       await g.tallyWorkout({

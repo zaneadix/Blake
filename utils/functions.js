@@ -15,7 +15,7 @@ const getLogValues = content => {
     date: dt,
     day: dy,
     month: m,
-    year: y ? `20${y}` : "2019",
+    year: y ? `20${y}` : new Date().getFullYear(),
     time: t,
     timeUnit: tU,
     exercise: e

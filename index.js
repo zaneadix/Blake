@@ -62,6 +62,7 @@ client.on("ready", () => {
 });
 
 client.on("message", async message => {
+  // console.log(message.content);
   let { attachments, author, channel, content, guild, member } = message;
   if (author.bot) return;
 
@@ -150,7 +151,7 @@ client.on("message", async message => {
 
     try {
       await g.tallyWorkout({
-        user: member,
+        member,
         exercise,
         duration: `${time} ${timeUnit}`,
         date,

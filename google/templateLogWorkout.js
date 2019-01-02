@@ -46,7 +46,7 @@ module.exports = (
   workoutLog,
   tallyData,
   month,
-  user,
+  member,
   exercise,
   duration,
   date,
@@ -55,17 +55,31 @@ module.exports = (
   imageURL
 ) => {
   // Find the row of the current user
-  let tallyRow = 0;
+  let rowIndex = -1;
   let requests = [];
-  let userRow = tallyData.find(row => {
-    tallyRow++;
-    return row[0] === user.id;
+  let memberRow = tallyData.find(row => {
+    rowIndex++;
+    return row[TALLY_COLUMNS.ID] === member.id;
   });
 
+  if (memberRow && memberRow[TALLY_COLUMNS.MEMBER] !== member.username) {
+    requests.push(
+      new UpdateCellRequest(
+        workoutLog.sheets["Tally"],
+        rowIndex,
+        TALLY_COLUMNS.MEMBER,
+        new StringValue(member.username)
+      )
+    );
+  }
+
   // Add row if it doesn't exists
-  if (!userRow) {
-    ++tallyRow;
-    let rowData = [new StringValue(user.id), new StringValue(user.username)];
+  if (!memberRow) {
+    let tallyRow = rowIndex + 2;
+    let rowData = [
+      new StringValue(member.id),
+      new StringValue(member.username)
+    ];
 
     // Create formula to tally from associated month sheet
     let tallyId = letterFromNumber(TALLY_COLUMNS.ID);
@@ -90,8 +104,8 @@ module.exports = (
 
   requests.push(
     new AddRowRequest(workoutLog.sheets[month], [
-      new StringValue(user.id),
-      new StringValue(user.username),
+      new StringValue(member.id),
+      new StringValue(member.username),
       new StringValue(exercise),
       new StringValue(duration),
       new StringValue(formatLogDate(date)),

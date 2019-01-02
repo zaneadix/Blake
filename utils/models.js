@@ -1,3 +1,20 @@
+class Member {
+  constructor(member) {
+    this.member = member;
+    this.id = member.user.id;
+    this.nickname = member.nickname;
+    this.username = member.user.username;
+  }
+
+  getName() {
+    return this.nickname || this.username;
+  }
+
+  toString() {
+    return this.member.user.toString();
+  }
+}
+
 class StringValue {
   constructor(stringValue = "") {
     this.userEnteredValue = {
@@ -31,6 +48,7 @@ class FormulaValue {
 }
 
 module.exports = {
+  Member,
   BooleanValue,
   FormulaValue,
   NumberValue,

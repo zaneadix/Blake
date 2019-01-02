@@ -8,6 +8,7 @@ const calendarMonthsDiff = require("date-fns/difference_in_calendar_months");
 const {
   formatLogDate,
   flatDate,
+  Member,
   LOG_COLUMNS,
   TALLY_COLUMNS
 } = require("../utils");
@@ -18,13 +19,13 @@ const templateLogWorkout = require("./templateLogWorkout");
 let directoryID = process.env.TFC_DIRECTORY_ID;
 
 // FOR TESTING
-// let users = [
-//   { id: "a111", username: "Steven" },
-//   { id: "a112", username: "McFarts" },
-//   { id: "a113", username: "Borsin" },
-//   { id: "a114", username: "Thomas" },
-//   { id: "a115", username: "Angela" },
-//   { id: "a116", username: "Florence" }
+// let members = [
+//   new Member({ user: { id: "a111", username: "Steven" }, nickname: "Soots" }),
+//   new Member({ user: { id: "a112", username: "McFarts" }, nickname: "Poots" }),
+//   new Member({ user: { id: "a113", username: "Borsin" }, nickname: "Boots" }),
+//   new Member({ user: { id: "a114", username: "Thomas" }, nickname: "Toots" }),
+//   new Member({ user: { id: "a115", username: "Angela" }, nickname: "Bertha" }),
+//   new Member({ user: { id: "a116", username: "Florence" }, nickname: "Foots" })
 // ];
 
 let g = {
@@ -140,8 +141,11 @@ const getWorkoutCounts = async (fromDate, toDate) => {
   return memberMap;
 };
 
+/**
+ * TALLY WORKOUT
+ */
 const tallyWorkout = async ({
-  user,
+  member,
   exercise,
   duration,
   date,
@@ -160,7 +164,7 @@ const tallyWorkout = async ({
   }
 
   // FOR TESTING
-  // user = users[Math.floor(Math.random() * users.length)];
+  // member = members[Math.floor(Math.random() * members.length)];
 
   // Fetch the current data set for tallies and logs
   let tallyData, logData;
@@ -172,11 +176,11 @@ const tallyWorkout = async ({
     throw error;
   }
 
-  // See if anythoing else was already logged today by this user
+  // See if anythoing else was already logged today by this member
   if (logData) {
     firstOfDay = !logData.values.find(row => {
       return (
-        row[LOG_COLUMNS.ID] === user.id &&
+        row[LOG_COLUMNS.ID] === member.id &&
         row[LOG_COLUMNS.DATE] === formatLogDate(date)
       );
     });
@@ -191,7 +195,7 @@ const tallyWorkout = async ({
             workoutLog,
             tallyData.values,
             month,
-            user,
+            member,
             exercise,
             duration,
             date,

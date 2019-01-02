@@ -13,6 +13,7 @@ const {
   flatDate,
   getLogValues,
   isLog,
+  Member,
   MATCHERS,
   SUBMISSION_WINDOW,
   TIME_UNITS
@@ -64,6 +65,8 @@ client.on("message", async message => {
   let { attachments, author, channel, content, guild, member } = message;
   if (author.bot) return;
 
+  member = new Member(member);
+
   let image;
   if (attachments.size) {
     let attachment = attachments.values().next().value;
@@ -88,7 +91,7 @@ client.on("message", async message => {
     } else {
       logResponse(
         message,
-        `Sorry, ${author}! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
+        `Sorry, ${member}! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
           ", "
         )}*`
       );
@@ -100,7 +103,7 @@ client.on("message", async message => {
       if (!(month >= 1 && month <= 12)) {
         logResponse(
           message,
-          `Quit goofin' off, ${author}! Month should be a number from 1 to 12. You entered *${month}*.`
+          `Quit goofin' off, ${member}! Month should be a number from 1 to 12. You entered *${month}*.`
         );
         return;
       }
@@ -108,7 +111,7 @@ client.on("message", async message => {
       if (!/\d{4}/.test(year)) {
         logResponse(
           message,
-          `Quit goofin' off, ${author}! It's definitely not the year ${year}.`
+          `Quit goofin' off, ${member}! It's definitely not the year ${year}.`
         );
         return;
       }
@@ -119,7 +122,7 @@ client.on("message", async message => {
       if (!(day >= 1 && day <= dayCount)) {
         logResponse(
           message,
-          `Quit being silly, ${author}! Day should be a number between 1 and ${dayCount} for the month you gave. You entered *${day}*.`
+          `Quit being silly, ${member}! Day should be a number between 1 and ${dayCount} for the month you gave. You entered *${day}*.`
         );
         return;
       }
@@ -128,7 +131,7 @@ client.on("message", async message => {
       if (dayIsAfter(date, flatDate())) {
         logResponse(
           message,
-          `Date alert, ${author}! The date you entered is in the future. Quit horsin' around!`
+          `Date alert, ${member}! The date you entered is in the future. Quit horsin' around!`
         );
         return;
       }
@@ -136,7 +139,7 @@ client.on("message", async message => {
       if (differenceInDays(flatDate(), date) > SUBMISSION_WINDOW) {
         logResponse(
           message,
-          `Date alert, ${author}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`
+          `Date alert, ${member}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`
         );
         return;
       }
@@ -147,7 +150,7 @@ client.on("message", async message => {
 
     try {
       await g.tallyWorkout({
-        user: author,
+        user: member,
         exercise,
         duration: `${time} ${timeUnit}`,
         date,
@@ -157,7 +160,7 @@ client.on("message", async message => {
     } catch (error) {
       logResponse(
         message,
-        `Oh crap, ${author}! I tried to log your workout but got this error. **${
+        `Oh crap, ${member}! I tried to log your workout but got this error. **${
           error.message
         }**.`
       );

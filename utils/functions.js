@@ -10,7 +10,9 @@ const formatLogDate = date => {
 };
 
 const getLogValues = content => {
-  let [, e, , t, tU, , dt, m, dy, , y] = MATCHERS.LOG_FORMAT.exec(content);
+  let [, e, , t, tU, , dt, m, dy, , y, p] = MATCHERS.LOG_FORMAT.exec(content);
+  let partners = (p || "").match(/\d+/g) || [];
+
   return {
     date: dt,
     day: dy,
@@ -18,7 +20,8 @@ const getLogValues = content => {
     year: y ? `20${y}` : new Date().getFullYear(),
     time: t,
     timeUnit: tU,
-    exercise: e
+    exercise: e,
+    partners
   };
 };
 

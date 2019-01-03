@@ -105,13 +105,11 @@ const getWorkoutCounts = async (fromDate, toDate) => {
     values.map(row => {
       let dateValue = `${row[LOG_COLUMNS.DATE]} ${year}`; // MMM DD YYYY
       dateMap[dateValue] = dateMap[dateValue] || flatDate(new Date(dateValue)); //currentTimeZone(new Date(dateValue));
-      console.log(dateMap[dateValue]);
 
       if (
         isAfter(dateMap[dateValue], fromDate) &&
         isBefore(dateMap[dateValue], toDate)
       ) {
-        console.log(dateValue, "IS GOOD");
         let member = row[LOG_COLUMNS.ID];
         memberMap[member] = memberMap[member] || {
           username: "",
@@ -145,16 +143,17 @@ const getWorkoutCounts = async (fromDate, toDate) => {
  * TALLY WORKOUT
  */
 const tallyWorkout = async ({
-  member,
+  members,
   exercise,
   duration,
   date,
   logTime,
   imageURL
 }) => {
+  let member = members[0]; // duh not good
   let year = formatDate(date, "YYYY");
   let month = formatDate(date, "MMM");
-  let firstOfDay = true;
+  // let firstOfDay = true;
   let workoutLog;
 
   try {
@@ -176,39 +175,27 @@ const tallyWorkout = async ({
     throw error;
   }
 
-  // See if anythoing else was already logged today by this member
-  if (logData) {
-    firstOfDay = !logData.values.find(row => {
-      return (
-        row[LOG_COLUMNS.ID] === member.id &&
-        row[LOG_COLUMNS.DATE] === formatLogDate(date)
-      );
-    });
-  }
-
   // Perform update
-  if (tallyData) {
-    try {
-      await g.sheets.spreadsheets
-        .batchUpdate(
-          templateLogWorkout(
-            workoutLog,
-            tallyData.values,
-            month,
-            member,
-            exercise,
-            duration,
-            date,
-            logTime,
-            firstOfDay,
-            imageURL
-          )
+  try {
+    await g.sheets.spreadsheets
+      .batchUpdate(
+        templateLogWorkout(
+          workoutLog,
+          tallyData.values,
+          logData.values,
+          month,
+          members,
+          exercise,
+          duration,
+          date,
+          logTime,
+          imageURL
         )
-        .then(() => {});
-    } catch (error) {
-      console.log(error);
-      throw new Error("Failed to update spreadsheet");
-    }
+      )
+      .then(() => {});
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to update spreadsheet");
   }
 };
 

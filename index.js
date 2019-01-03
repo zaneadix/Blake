@@ -62,8 +62,15 @@ client.on("ready", () => {
 });
 
 client.on("message", async message => {
-  // console.log(message.content);
-  let { attachments, author, channel, content, guild, member } = message;
+  let {
+    attachments,
+    author,
+    channel,
+    content,
+    guild,
+    member,
+    mentions
+  } = message;
   if (author.bot) return;
 
   member = new Member(member);
@@ -81,9 +88,16 @@ client.on("message", async message => {
    * WORKOUT LOGS
    */
   if (channel.name === "log-your-workout" && isLog(content)) {
-    let { date, day, month, year, time, timeUnit, exercise } = getLogValues(
-      content
-    );
+    let {
+      date,
+      day,
+      month,
+      year,
+      time,
+      timeUnit,
+      exercise,
+      partners
+    } = getLogValues(content);
 
     if (MATCHERS.MINUTE.test(timeUnit)) {
       timeUnit = "minute";
@@ -146,12 +160,20 @@ client.on("message", async message => {
       }
     }
 
-    // may need current timezone?
     date = date || flatDate(); //default date is today
+
+    //Get all members
+    let members = [member];
+    partners.forEach(partnerId => {
+      let partner = mentions.members.find(user => user.id === partnerId);
+      if (partner) {
+        members.push(new Member(partner));
+      }
+    });
 
     try {
       await g.tallyWorkout({
-        member,
+        members,
         exercise,
         duration: `${time} ${timeUnit}`,
         date,

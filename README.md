@@ -25,7 +25,7 @@ Exercise        Duration        Date           Partners
 
 - **order matters**
 - {} = optional
-- `for` and `on` are keywords i use to understand your message
+- `for`, `on` and `with` are keywords i use to understand your message
 - `Exercise` - can be anything you did for your workout
 - `Duration` - the amount of time you worked out. Acceptable time units are
   - min, mins, minutes

@@ -13,40 +13,35 @@ My name is Blake and I'm here to make your experience as part of the Tranquilina
 When you've completed a workout, head over to the [Workout Logs](https://discordapp.com/channels/525441114648608780/525819670553690156) channel enter a message that matches the following format.
 
 ```
-Ran for 40 minutes on 2/22
+Ran for 40 minutes on 2/22 with @ShaunT
 ```
 
-**Lets break things down**
+**Let's break things down**
 
 ```
-Exercise          Duration          Date
-  [Ran]   for   [40 minutes]   { on  [2/22] }
-                                  *optional
+Exercise        Duration        Date           Partners
+  [Ran]  for  [40 minutes]  { on [2/22] } { with [*mentions*] }
 ```
 
+- **order matters**
+- {} = optional
 - `for` and `on` are keywords i use to understand your message
-- `Exercise` can be anything you did for your workout
-- `Duration` is the amount of time you worked out. Acceptable time units are
+- `Exercise` - can be anything you did for your workout
+- `Duration` - the amount of time you worked out. Acceptable time units are
   - min, mins, minutes
   - hr, hrs, hour, hours
-- `Date` is the day you completed your workout. If you do not enter a date, your workout will be logged for the current day.
-
+- `Date` - the day you completed your workout. If you do not enter a date, your workout will be logged for the current day.
   - format is MM/DD
+- `Partners` - If you worked out with others you can mention them here to log the same workout for everyone. These can be comma separated or speced with the word 'and' in case you want to write like a human.
 
-Here are a few examples of acceptable log messages.
+**Here are a some examples of acceptable log messages.**
 
 ```
 Biked to work for 30 min
-Punched bricks for 10 minutes
-Jumped up and down for 2 hours on 2/22
 Cartwheels for 1 hr
+Jumped up and down for 2 hours on 2/22
+Punched bricks for 10 minutes with @ShaunT @TonyH @myCat
+Ran in circles for 12 hrs on 1/1 with @mom, @sister and @dad
 ```
 
 Once I've reviewed your log submission and found it's free of funny business, I'll record it and let you know all is good with a ✅. If anything goes wrong, I'll mark your submission with an ❌ and let you know if there's anything you can do to help me sovle the problem.
-
-### TODO
-
-- Interval updates
-  - Post Status updates to the `general` channel
-    - Weekly Status
-    - Monthly Status

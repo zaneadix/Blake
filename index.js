@@ -1,6 +1,7 @@
 const Discord = require("discord.js");
 const schedule = require("node-schedule");
-var AsciiTable = require("ascii-table");
+const AsciiTable = require("ascii-table");
+const _uniq = require("lodash/uniq");
 const dayIsAfter = require("date-fns/is_after");
 const differenceInDays = require("date-fns/difference_in_days");
 const formatDate = require("date-fns/format");
@@ -166,10 +167,11 @@ client.on("message", async message => {
     let members = [member];
     partners.forEach(partnerId => {
       let partner = mentions.members.find(user => user.id === partnerId);
-      if (partner) {
+      if (partner && !partner.user.bot) {
         members.push(new Member(partner));
       }
     });
+    members = _uniq(members);
 
     try {
       await g.tallyWorkout({
@@ -191,6 +193,22 @@ client.on("message", async message => {
     }
 
     logResponse(message, null, true);
+
+    if (members.length > 1) {
+      let logger = members.shift();
+      members = members.map(member => member.toString());
+      let eachOf = members.length > 1 ? "each of " : "";
+      let end = members.splice(-2).join(" and ");
+      let mentions = [...members, end].join(", ");
+
+      channel
+        .send(
+          `Hey! ${mentions}! I've logged a workout for ${eachOf}you on behalf of ${logger}. Team work!`
+        )
+        .then(() => {})
+        .catch(error => console.log(error));
+    }
+
     return;
   }
 

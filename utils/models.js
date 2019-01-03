@@ -1,6 +1,8 @@
 class Member {
   constructor(member) {
     this.member = member;
+    this.user = member.user;
+
     this.id = member.user.id;
     this.nickname = member.nickname;
     this.username = member.user.username;

@@ -150,10 +150,8 @@ const tallyWorkout = async ({
   logTime,
   imageURL
 }) => {
-  let member = members[0]; // duh not good
   let year = formatDate(date, "YYYY");
   let month = formatDate(date, "MMM");
-  // let firstOfDay = true;
   let workoutLog;
 
   try {

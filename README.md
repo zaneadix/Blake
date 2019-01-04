@@ -26,10 +26,10 @@ Exercise        Duration        Date           Partners
 - **order matters**
 - {} = optional
 - `for`, `on` and `with` are keywords i use to understand your message
-- `Exercise` - can be anything you did for your workout
-- `Duration` - the amount of time you worked out. Acceptable time units are
-  - min, mins, minutes
-  - hr, hrs, hour, hours
+- `Exercise` - can be anything you did for your workout. This should only contain **alphabetical characters**, and the following **special characters: ( ) \ /**
+- `Duration` - the amount of time you worked out.
+  - number _CAN_ contain decimals
+  - acceptable time units are min, mins, minutes, hr, hrs, hour, hours
 - `Date` - the day you completed your workout. If you do not enter a date, your workout will be logged for the current day.
   - format is MM/DD
 - `Partners` - If you worked out with others you can mention them here to log the same workout for everyone. These can be comma separated or speced with the word 'and' in case you want to write like a human.
@@ -42,6 +42,7 @@ Cartwheels for 1 hr
 Jumped up and down for 2 hours on 2/22
 Punched bricks for 10 minutes with @ShaunT @TonyH @myCat
 Ran in circles for 12 hrs on 1/1 with @mom, @sister and @dad
+Gym (wights/cardio) for 1.5 hours
 ```
 
 Once I've reviewed your log submission and found it's free of funny business, I'll record it and let you know all is good with a ✅. If anything goes wrong, I'll mark your submission with an ❌ and let you know if there's anything you can do to help me sovle the problem.

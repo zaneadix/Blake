@@ -12,7 +12,8 @@ const COLORS = {
 };
 
 const MATCHERS = {
-  LOG_FORMAT: /(\w['\w\s]*)\s+for\s+((\d*)\s*?([a-z]+))(\s+on\s+((\d+)\/(\d+)(\/(\d+))?))?(\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+)?/i,
+  //           gym (weights/jogging)   for 30[.5] min               on 12/21[/18]                      with @jim[,] @dale [and] @bob
+  LOG_FORMAT: /(^\(?\w['()/\\\w\s]*)\s+for\s+(((\d.?)+)\s*?([a-z]+))(\s+on\s+((\d+)\/(\d+)(\/(\d+))?))?(\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+)?/i,
   IMAGE_EXTS: /\.(jpg?g|tiff|png)$/i,
   MINUTE: /min|mins|minutes/,
   HOUR: /hr|hrs|hour|hours/

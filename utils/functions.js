@@ -10,7 +10,9 @@ const formatLogDate = date => {
 };
 
 const getLogValues = content => {
-  let [, e, , t, tU, , dt, m, dy, , y, p] = MATCHERS.LOG_FORMAT.exec(content);
+  let [, e, , t, , tU, , dt, m, dy, , y, p] = MATCHERS.LOG_FORMAT.exec(
+    content.trim()
+  );
   let partners = (p || "").match(/\d+/g) || [];
 
   return {

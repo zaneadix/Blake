@@ -9,24 +9,6 @@ const formatLogDate = date => {
   return formatDate(date || Date.now(), "MMM D");
 };
 
-const getLogValues = content => {
-  let [, e, , t, , tU, , dt, m, dy, , y, p] = MATCHERS.LOG_FORMAT.exec(
-    content.trim()
-  );
-  let partners = (p || "").match(/\d+/g) || [];
-
-  return {
-    date: dt,
-    day: dy,
-    month: m,
-    year: y ? `20${y}` : new Date().getFullYear(),
-    time: t,
-    timeUnit: tU,
-    exercise: e,
-    partners
-  };
-};
-
 const isLog = content => {
   return MATCHERS.LOG_FORMAT.test(content);
 };
@@ -41,6 +23,5 @@ module.exports = {
   isLog,
   formatLogDate,
   flatDate,
-  getLogValues,
   letterFromNumber
 };

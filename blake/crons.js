@@ -36,8 +36,7 @@ const crons = client => {
    * FROM: 8 days ago
    * TO: Today at 00:00;
    */
-  const weekleyResult = schedule.scheduleJob("*/5 * * * * *", async () => {
-    console.log("hey");
+  const weekleyResult = schedule.scheduleJob("* * 8 * 1", async () => {
     let to = flatDate();
     let from = subDays(to, 8);
     let counts;

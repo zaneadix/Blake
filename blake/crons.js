@@ -37,48 +37,48 @@ const crons = client => {
    * FROM: 8 days ago
    * TO: Today at 00:00;
    */
-  //   const weekleyResult = schedule.scheduleJob('* 8 * * 1', async () => {
-  //     let to = flatDate();
-  //     let from = subDays(to, 8);
-  //     let counts;
-  //     try {
-  //       counts = await g.getWorkoutCounts(from, to);
-  //     } catch (error) {
-  //       console.log('Failed to get weekley results');
-  //       console.log(error);
-  //       return;
-  //     }
-  //     let data = [];
-  //     Object.keys(counts).forEach(id => {
-  //       let row = counts[id];
-  //       data.push([
-  //         row.username,
-  //         row.workoutsLogged,
-  //         row.daysWorkedOut,
-  //         row.yearTotal
-  //       ]);
-  //     });
-  //     data.sort((a, b) => b[2] - a[2]);
-  //     data.unshift(['Member', 'Logged', 'Days', 'Year']);
-  //     let output = table(data, {
-  //       columns: {
-  //         0: { truncate: 13 }
-  //       }
-  //     });
-  //     let message = `
-  // Hey, Tranquili-nerds! I've prepared your summary for:
-  // **The Week of ${formatDate(addDays(from, 1), 'MMM Do')}**
-  // Take a look and make sure every workout you've done is accounted for.
-  // If something seems off, be sure to get in touch with an admin.
-  // We wouldn't want any of your hard work slipping through the cracks!
-  // *Logged* - Total workouts logged this week.
-  // *Days* - Total days worked out this week.
-  // *Year* - Total days worked out this year`;
-  //     let channel = getChannel(client, 'general');
-  //     if (channel) {
-  //       channel.send(message + '```' + output.toString() + '```');
-  //     }
-  //   });
+  const weekleyResult = schedule.scheduleJob('0 8 * * 1', async () => {
+    let to = flatDate();
+    let from = subDays(to, 8);
+    let counts;
+    try {
+      counts = await g.getWorkoutCounts(from, to);
+    } catch (error) {
+      console.log('Failed to get weekley results');
+      console.log(error);
+      return;
+    }
+    let data = [];
+    Object.keys(counts).forEach(id => {
+      let row = counts[id];
+      data.push([
+        row.username,
+        row.workoutsLogged,
+        row.daysWorkedOut,
+        row.yearTotal
+      ]);
+    });
+    data.sort((a, b) => b[2] - a[2]);
+    data.unshift(['Member', 'Logged', 'Days', 'Year']);
+    let output = table(data, {
+      columns: {
+        0: { truncate: 13 }
+      }
+    });
+    let message = `
+  Hey, Tranquili-nerds! I've prepared your summary for:
+  **The Week of ${formatDate(addDays(from, 1), 'MMM Do')}**
+  Take a look and make sure every workout you've done is accounted for.
+  If something seems off, be sure to get in touch with an admin.
+  We wouldn't want any of your hard work slipping through the cracks!
+  *Logged* - Total workouts logged this week.
+  *Days* - Total days worked out this week.
+  *Year* - Total days worked out this year`;
+    let channel = getChannel(client, 'general');
+    if (channel) {
+      channel.send(message + '```' + output.toString() + '```');
+    }
+  });
   /**
    * First day of every month
    * I'm looking for workouts between (exclusive)

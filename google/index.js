@@ -1,9 +1,9 @@
-const { google } = require("googleapis");
-const formatDate = require("date-fns/format");
-const subMonths = require("date-fns/sub_months");
-const isAfter = require("date-fns/is_after");
-const isBefore = require("date-fns/is_before");
-const calendarMonthsDiff = require("date-fns/difference_in_calendar_months");
+const { google } = require('googleapis');
+const formatDate = require('date-fns/format');
+const subMonths = require('date-fns/sub_months');
+const isAfter = require('date-fns/is_after');
+const isBefore = require('date-fns/is_before');
+const calendarMonthsDiff = require('date-fns/difference_in_calendar_months');
 
 const {
   formatLogDate,
@@ -11,10 +11,10 @@ const {
   Member,
   LOG_COLUMNS,
   TALLY_COLUMNS
-} = require("../utils");
-const authorize = require("./authorize");
-const getWorkoutLog = require("./getWorkoutLog");
-const templateLogWorkout = require("./templateLogWorkout");
+} = require('../utils');
+const authorize = require('./authorize');
+const getWorkoutLog = require('./getWorkoutLog');
+const templateLogWorkout = require('./templateLogWorkout');
 
 let directoryID = process.env.TFC_DIRECTORY_ID;
 
@@ -29,15 +29,15 @@ let directoryID = process.env.TFC_DIRECTORY_ID;
 // ];
 
 let g = {
-  drive: google.drive({ version: "v3" }),
-  sheets: google.sheets({ version: "v4" }),
+  drive: google.drive({ version: 'v3' }),
+  sheets: google.sheets({ version: 'v4' }),
   cache: {}
 };
 
 const initializeClients = async () => {
   let auth = await authorize();
-  g.drive = google.drive({ version: "v3", auth });
-  g.sheets = google.sheets({ version: "v4", auth });
+  g.drive = google.drive({ version: 'v3', auth });
+  g.sheets = google.sheets({ version: 'v4', auth });
 };
 initializeClients();
 
@@ -51,15 +51,15 @@ const fetchData = async (workoutLog, months) => {
     await g.sheets.spreadsheets.values
       .batchGet({
         spreadsheetId: workoutLog.id,
-        ranges: ["Tally", ...months],
-        majorDimension: "ROWS"
+        ranges: ['Tally', ...months],
+        majorDimension: 'ROWS'
       })
       .then(({ data }) => {
         result = data.valueRanges;
       });
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to retrieve spreadsheet values");
+    throw new Error('Failed to retrieve spreadsheet values');
   }
 
   return result;
@@ -84,10 +84,10 @@ const getWorkoutCounts = async (fromDate, toDate) => {
   }
 
   let diff = calendarMonthsDiff(date, fromDate);
-  let months = [formatDate(date, "MMM")];
+  let months = [formatDate(date, 'MMM')];
   for (let i = 0; i < diff; i++) {
     date = subMonths(date, 1);
-    months.push(formatDate(date, "MMM"));
+    months.push(formatDate(date, 'MMM'));
   }
 
   let dataSets;
@@ -112,7 +112,7 @@ const getWorkoutCounts = async (fromDate, toDate) => {
       ) {
         let member = row[LOG_COLUMNS.ID];
         memberMap[member] = memberMap[member] || {
-          username: "",
+          username: '',
           workoutsLogged: 0,
           daysWorkedOut: 0,
           yearTotal: 0
@@ -123,7 +123,7 @@ const getWorkoutCounts = async (fromDate, toDate) => {
         memberMap[member].username =
           memberMap[member].username || row[LOG_COLUMNS.MEMBER];
 
-        row[LOG_COLUMNS.FIRST_OF_DAY] === "yes" &&
+        row[LOG_COLUMNS.FIRST_OF_DAY] === 'yes' &&
           memberMap[member].daysWorkedOut++;
       }
     });
@@ -150,8 +150,8 @@ const tallyWorkout = async ({
   logTime,
   imageURL
 }) => {
-  let year = formatDate(date, "YYYY");
-  let month = formatDate(date, "MMM");
+  let year = formatDate(date, 'YYYY');
+  let month = formatDate(date, 'MMM');
   let workoutLog;
 
   try {
@@ -193,7 +193,7 @@ const tallyWorkout = async ({
       .then(() => {});
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to update spreadsheet");
+    throw new Error('Failed to update spreadsheet');
   }
 };
 

@@ -1,6 +1,7 @@
 const schedule = require('node-schedule');
 const { table } = require('table');
 const formatDate = require('date-fns/format');
+const addDays = require('date-fns/add_days');
 const subDays = require('date-fns/sub_days');
 
 const g = require('../google');
@@ -71,7 +72,7 @@ const crons = client => {
     let message = `
 Hey, Tranquili-nerds! I've prepared your summary for:
 
-**The Week of ${formatDate(from, 'MMM Do')}**
+**The Week of ${formatDate(addDays(from, 1), 'MMM Do')}**
 
 Take a look and make sure every workout you've done is accounted for.
 If something seems off, be sure to get in touch with an admin.

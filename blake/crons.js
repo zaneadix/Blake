@@ -1,10 +1,10 @@
-const schedule = require("node-schedule");
-const { table } = require("table");
-const formatDate = require("date-fns/format");
-const subDays = require("date-fns/sub_days");
+const schedule = require('node-schedule');
+const { table } = require('table');
+const formatDate = require('date-fns/format');
+const subDays = require('date-fns/sub_days');
 
-const g = require("../google");
-const { flatDate } = require("../utils");
+const g = require('../google');
+const { flatDate } = require('../utils');
 const GUILD_ID = process.env.TFC_GUILD;
 
 const getChannel = (client, channelName) => {
@@ -36,7 +36,7 @@ const crons = client => {
    * FROM: 8 days ago
    * TO: Today at 00:00;
    */
-  const weekleyResult = schedule.scheduleJob("* * 8 * 1", async () => {
+  const weekleyResult = schedule.scheduleJob('* 8 * * 1', async () => {
     let to = flatDate();
     let from = subDays(to, 8);
     let counts;
@@ -44,7 +44,7 @@ const crons = client => {
     try {
       counts = await g.getWorkoutCounts(from, to);
     } catch (error) {
-      console.log("Failed to get weekley results");
+      console.log('Failed to get weekley results');
       console.log(error);
       return;
     }
@@ -60,7 +60,7 @@ const crons = client => {
       ]);
     });
     data.sort((a, b) => b[2] - a[2]);
-    data.unshift(["Member", "Logged", "Days", "Year"]);
+    data.unshift(['Member', 'Logged', 'Days', 'Year']);
 
     let output = table(data, {
       columns: {
@@ -71,7 +71,7 @@ const crons = client => {
     let message = `
 Hey, Tranquili-nerds! I've prepared your summary for:
 
-**The Week of ${formatDate(from, "MMM Do")}**
+**The Week of ${formatDate(from, 'MMM Do')}**
 
 Take a look and make sure every workout you've done is accounted for.
 If something seems off, be sure to get in touch with an admin.
@@ -81,9 +81,9 @@ We wouldn't want any of your hard work slipping through the cracks!
 *Days* - Total days worked out this week.
 *Year* - Total days worked out this year`;
 
-    let channel = getChannel(client, "general");
+    let channel = getChannel(client, 'general');
     if (channel) {
-      channel.send(message + "```" + output.toString() + "```");
+      channel.send(message + '```' + output.toString() + '```');
     }
   });
 

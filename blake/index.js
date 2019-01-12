@@ -1,8 +1,8 @@
-const Discord = require("discord.js");
+const Discord = require('discord.js');
 const authToken = process.env.DISCORD_TOKEN;
-const crons = require("./crons");
-const logWorkout = require("./logWorkout");
-const { isLog } = require("../utils");
+const crons = require('./crons');
+const logWorkout = require('./logWorkout');
+const { isLog } = require('../utils');
 
 const client = new Discord.Client();
 
@@ -11,22 +11,21 @@ client
   .then(() => {})
   .catch(error => console.error(error));
 
-client.on("ready", () => {
-  // console.log(client.guilds);
-  console.log(client.user.username, "is up and running.");
+client.on('ready', () => {
+  console.log(client.user.username, 'is up and running.');
   crons(client);
 });
 
-client.on("message", async message => {
+client.on('message', async message => {
   let { author, channel, content } = message;
 
   if (author.bot) return;
 
-  if (channel.name === "log-your-workout" && isLog(content)) {
+  if (channel.name === 'log-your-workout' || content.match(/^log /)) {
     await logWorkout(message);
   }
 
   if (message.isMentioned(client.user)) {
-    message.reply("yes?");
+    message.reply('yes?');
   }
 });

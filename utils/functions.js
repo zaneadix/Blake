@@ -1,12 +1,12 @@
-const formatDate = require("date-fns/format");
-const { MATCHERS } = require("./constants");
+const formatDate = require('date-fns/format');
+const { MATCHERS } = require('./constants');
 
 const flatDate = date => {
   return new Date((date || new Date()).setHours(0, 0, 0, 0));
 };
 
 const formatLogDate = date => {
-  return formatDate(date || Date.now(), "MMM D");
+  return formatDate(date || Date.now(), 'MMM D');
 };
 
 const isLog = content => {

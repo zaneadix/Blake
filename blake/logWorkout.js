@@ -1,22 +1,47 @@
-const _uniq = require("lodash/uniq");
-const formatDate = require("date-fns/format");
-const dayIsAfter = require("date-fns/is_after");
-const differenceInDays = require("date-fns/difference_in_days");
+const _uniq = require('lodash/uniq');
+const formatDate = require('date-fns/format');
+const dayIsAfter = require('date-fns/is_after');
+const differenceInDays = require('date-fns/difference_in_days');
 
-const g = require("../google");
+const g = require('../google');
 const {
   flatDate,
   Member,
   MATCHERS,
   SUBMISSION_WINDOW,
   TIME_UNITS
-} = require("../utils");
+} = require('../utils');
+
+const MINUTE = /minutes?|mins?/i;
+const HOUR = /hours?|hrs?/i;
+const V_DURATION = /^((\d+\.{1}\d+)|(\.?\d+))$/i;
+const ACTIVITY = /((['()/\\\w]*\s?)+)/i;
+const TIME = /(((\d.?)+)\s*?([a-z]+))/i; //need to validate number using DURATION
+const DATE = /(\s+on\s+((\d+)\/(\d+)(\/(\d+))?))/i;
+const PARTNERS = /(\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+)/i;
+
+const LOG = new RegExp(
+  `^((${ACTIVITY.source}\\s+for\\s${TIME.source})|log (${TIME.source}\\s+of\\s${
+    ACTIVITY.source
+  }))`
+);
+const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'g');
+const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)?(?!.)/i;
+
+const isLogMessage = content => {
+  let result = LOG.test(content);
+  if (!result) {
+    result = POSSIBLE_LOG.test(content) ? 'maybe' : 'no';
+  } else {
+    result = 'yes';
+  }
+  return result;
+};
 
 const getLogValues = content => {
-  let [, e, , t, , tU, , dt, m, dy, , y, p] = MATCHERS.LOG_FORMAT.exec(
-    content.trim()
-  );
-  let partners = (p || "").match(/\d+/g) || [];
+  console.log(content);
+  let [, e, , t, , tU, , dt, m, dy, , y, p] = LOG.exec(content.trim());
+  let partners = (p || '').match(/\d+/g) || [];
 
   return {
     date: dt,
@@ -32,7 +57,7 @@ const getLogValues = content => {
 
 const logResponse = (message, feedback, success = false) => {
   message
-    .react(success ? "✅" : "❌")
+    .react(success ? '✅' : '❌')
     .then(() => {})
     .catch(error => console.log(error));
 
@@ -45,6 +70,19 @@ const logResponse = (message, feedback, success = false) => {
 };
 
 const logWorkout = async message => {
+  //Verify this is a log message
+  switch (isLogMessage(message.content)) {
+    case 'no':
+      return;
+    case 'maybe':
+      message.reply(
+        'I think you might have just tried to submit a log. If so, please retry using the following format. fart fart fart fart'
+      );
+      return;
+    default:
+      break;
+  }
+
   let { attachments, channel, content, member, mentions } = message;
   let {
     date,
@@ -60,14 +98,14 @@ const logWorkout = async message => {
   member = new Member(member);
 
   if (MATCHERS.MINUTE.test(timeUnit)) {
-    timeUnit = "minute";
+    timeUnit = 'minute';
   } else if (MATCHERS.HOUR.test(timeUnit)) {
-    timeUnit = "hour";
+    timeUnit = 'hour';
   } else {
     logResponse(
       message,
       `Sorry, ${member}! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
-        ", "
+        ', '
       )}*`
     );
     return;
@@ -147,7 +185,7 @@ const logWorkout = async message => {
       exercise,
       duration: `${time} ${timeUnit}`,
       date,
-      logTime: formatDate(new Date(), "M-D-YY h:mm:ssa"), // may need current timezone?
+      logTime: formatDate(new Date(), 'M-D-YY h:mm:ssa'), // may need current timezone?
       imageURL: image && image.url
     });
   } catch (error) {
@@ -165,9 +203,9 @@ const logWorkout = async message => {
   if (members.length > 1) {
     let logger = members.shift();
     members = members.map(member => member.toString());
-    let eachOf = members.length > 1 ? "each of " : "";
-    let end = members.splice(-2).join(" and ");
-    let mentions = [...members, end].join(", ");
+    let eachOf = members.length > 1 ? 'each of ' : '';
+    let end = members.splice(-2).join(' and ');
+    let mentions = [...members, end].join(', ');
 
     channel
       .send(

@@ -24,7 +24,7 @@ const COLORS = {
 // const DATE_R = /(\s+on\s+((\d+)\/(\d+)(\/(\d+))?))/i;
 // const PARTNERS_R = /(\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+)/i;
 
-console.log(exercise);
+// console.log(exercise);
 
 const MATCHERS = {
   IMAGE_EXTS: /\.(jpe?g|tiff|png)$/i

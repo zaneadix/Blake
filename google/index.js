@@ -5,13 +5,7 @@ const isAfter = require('date-fns/is_after');
 const isBefore = require('date-fns/is_before');
 const calendarMonthsDiff = require('date-fns/difference_in_calendar_months');
 
-const {
-  formatLogDate,
-  flatDate,
-  Member,
-  LOG_COLUMNS,
-  TALLY_COLUMNS
-} = require('../utils');
+const { flatDate, LOG_COLUMNS, TALLY_COLUMNS } = require('../utils');
 const authorize = require('./authorize');
 const getWorkoutLog = require('./getWorkoutLog');
 const templateLogWorkout = require('./templateLogWorkout');
@@ -144,7 +138,7 @@ const getWorkoutCounts = async (fromDate, toDate) => {
  */
 const tallyWorkout = async ({
   members,
-  exercise,
+  workout,
   duration,
   date,
   logTime,
@@ -183,7 +177,7 @@ const tallyWorkout = async ({
           logData.values,
           month,
           members,
-          exercise,
+          workout,
           duration,
           date,
           logTime,

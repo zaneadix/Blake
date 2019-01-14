@@ -14,45 +14,84 @@ const {
 
 const MINUTE = /minutes?|mins?/i;
 const HOUR = /hours?|hrs?/i;
-const V_DURATION = /^((\d+\.{1}\d+)|(\.?\d+))$/i;
-const ACTIVITY = /((['()/\\\w]*\s?)+)/i;
+const DATE_V = /^((\d+\.{1}\d+)|(\.?\d+))$/i;
+const WORKOUT = /((['()/\\\w]*\s?)+)/i;
 const TIME = /(((\d.?)+)\s*?([a-z]+))/i; //need to validate number using DURATION
-const DATE = /(\s+on\s+((\d+)\/(\d+)(\/(\d+))?))/i;
-const PARTNERS = /(\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+)/i;
+const DATE = /\s+on\s+((\d+)\/(\d+)(\/(\d+))?)/i;
+const PARTNERS = /\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+/i;
 
 const LOG = new RegExp(
-  `^((${ACTIVITY.source}\\s+for\\s${TIME.source})|log (${TIME.source}\\s+of\\s${
-    ACTIVITY.source
-  }))`
+  `^((${WORKOUT.source}\\s+for\\s+${TIME.source})|(log ${
+    TIME.source
+  }\\s+of\\s+${WORKOUT.source}))`
 );
-const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'g');
+const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'ig');
+console.log(LOG_OPTIONS);
 const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)?(?!.)/i;
 
 const isLogMessage = content => {
+  console.log('TESTING');
+  console.log(LOG);
   let result = LOG.test(content);
+  console.log('RESULT', result);
   if (!result) {
     result = POSSIBLE_LOG.test(content) ? 'maybe' : 'no';
+    console.log('POSSIBLE', result);
   } else {
     result = 'yes';
   }
   return result;
 };
 
-const getLogValues = content => {
-  console.log(content);
-  let [, e, , t, , tU, , dt, m, dy, , y, p] = LOG.exec(content.trim());
-  let partners = (p || '').match(/\d+/g) || [];
-
-  return {
-    date: dt,
-    day: dy,
-    month: m,
-    year: y ? `20${y}` : new Date().getFullYear(),
-    time: t,
-    timeUnit: tU,
-    exercise: e,
-    partners
+const getLogValues = log => {
+  console.log('GETTING VALUES');
+  let cutoff = log.length;
+  let values = {
+    year: new Date().getFullYear(),
+    partners: []
   };
+  let option;
+
+  while ((option = LOG_OPTIONS.exec(log))) {
+    let match = option[0].trim();
+    cutoff = option.index < cutoff ? option.index : cutoff;
+    switch (match.split(' ')[0]) {
+      case 'on':
+        values = Object.assign(values, {
+          date: option[2],
+          month: option[3],
+          day: option[4],
+          year: option[6] ? `20${option[6]}` : values.year
+        });
+        break;
+      case 'with':
+        values.partners = option[0].match(/\d+/g) || [];
+    }
+  }
+
+  log = log.substring(0, cutoff).trim();
+
+  let workout, duration, timeUnit;
+  console.log('EXECUTING REGEX');
+  let req = LOG.exec(log);
+  console.log('REGEX DONE');
+  if (log.includes(' for ')) {
+    workout = req[3];
+    duration = req[6];
+    timeUnit = req[8];
+  } else if (log.includes(' of ')) {
+    workout = req[14];
+    duration = req[11];
+    timeUnit = req[13];
+  }
+
+  console.log(values);
+
+  return Object.assign(values, {
+    duration,
+    timeUnit,
+    workout
+  });
 };
 
 const logResponse = (message, feedback, success = false) => {
@@ -70,18 +109,23 @@ const logResponse = (message, feedback, success = false) => {
 };
 
 const logWorkout = async message => {
+  console.log(message.content);
   //Verify this is a log message
   switch (isLogMessage(message.content)) {
     case 'no':
+      console.log('NAH');
       return;
     case 'maybe':
       message.reply(
         'I think you might have just tried to submit a log. If so, please retry using the following format. fart fart fart fart'
       );
       return;
+    case 'yes':
     default:
       break;
   }
+
+  console.log('IS LOG');
 
   let { attachments, channel, content, member, mentions } = message;
   let {
@@ -89,17 +133,19 @@ const logWorkout = async message => {
     day,
     month,
     year,
-    time,
+    duration,
     timeUnit,
-    exercise,
+    workout,
     partners
   } = getLogValues(content);
 
+  console.log(date);
+
   member = new Member(member);
 
-  if (MATCHERS.MINUTE.test(timeUnit)) {
+  if (MINUTE.test(timeUnit)) {
     timeUnit = 'minute';
-  } else if (MATCHERS.HOUR.test(timeUnit)) {
+  } else if (HOUR.test(timeUnit)) {
     timeUnit = 'hour';
   } else {
     logResponse(
@@ -110,7 +156,7 @@ const logWorkout = async message => {
     );
     return;
   }
-  timeUnit = time > 1 ? `${timeUnit}s` : timeUnit; //pluralize
+  timeUnit = duration > 1 ? `${timeUnit}s` : timeUnit; //pluralize
 
   if (date) {
     if (!(month >= 1 && month <= 12)) {
@@ -182,8 +228,8 @@ const logWorkout = async message => {
   try {
     await g.tallyWorkout({
       members,
-      exercise,
-      duration: `${time} ${timeUnit}`,
+      workout,
+      duration: `${duration} ${timeUnit}`,
       date,
       logTime: formatDate(new Date(), 'M-D-YY h:mm:ssa'), // may need current timezone?
       imageURL: image && image.url
@@ -209,7 +255,7 @@ const logWorkout = async message => {
 
     channel
       .send(
-        `Hey! ${mentions}! I've logged a workout for ${eachOf}you on behalf of ${logger}. Team work!`
+        `Hey! ${mentions}! I've logged workout for ${eachOf}you on behalf of ${logger}. Team work!`
       )
       .then(() => {})
       .catch(error => console.log(error));

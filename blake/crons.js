@@ -37,7 +37,7 @@ const crons = client => {
    * FROM: 8 days ago
    * TO: Today at 00:00;
    */
-  const weekleyResult = schedule.scheduleJob('0 8 * * 1', async () => {
+  const weekleyResult = schedule.scheduleJob('0 6 * * 1', async () => {
     let to = flatDate();
     let from = subDays(to, 8);
     let counts;
@@ -66,7 +66,7 @@ const crons = client => {
       }
     });
     let message = `
-  Hey, Tranquili-nerds! I've prepared your summary for:
+  Rise and shine, Tranquili-nerds! I've prepared your summary for:
   **The Week of ${formatDate(addDays(from, 1), 'MMM Do')}**
   Take a look and make sure every workout you've done is accounted for.
   If something seems off, be sure to get in touch with an admin.

@@ -15,28 +15,23 @@ const {
 const MINUTE = /minutes?|mins?/i;
 const HOUR = /hours?|hrs?/i;
 const DATE_V = /^((\d+\.{1}\d+)|(\.?\d+))$/i;
-const WORKOUT = /((['()/\\\w]*\s?)+)/i;
+const WORKOUT = /((['()/\\\w]+\s?)+)/i;
 const TIME = /(((\d.?)+)\s*?([a-z]+))/i; //need to validate number using DURATION
 const DATE = /\s+on\s+((\d+)\/(\d+)(\/(\d+))?)/i;
 const PARTNERS = /\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+/i;
 
 const LOG = new RegExp(
-  `^((${WORKOUT.source}\\s+for\\s+${TIME.source})|(log ${
+  `^((${WORKOUT.source}\\s+for\\s+${TIME.source})|(<@!?\\d+>\\s+log\\s+${
     TIME.source
   }\\s+of\\s+${WORKOUT.source}))`
 );
 const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'ig');
-console.log(LOG_OPTIONS);
 const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)?(?!.)/i;
 
 const isLogMessage = content => {
-  console.log('TESTING');
-  console.log(LOG);
   let result = LOG.test(content);
-  console.log('RESULT', result);
   if (!result) {
     result = POSSIBLE_LOG.test(content) ? 'maybe' : 'no';
-    console.log('POSSIBLE', result);
   } else {
     result = 'yes';
   }
@@ -44,7 +39,6 @@ const isLogMessage = content => {
 };
 
 const getLogValues = log => {
-  console.log('GETTING VALUES');
   let cutoff = log.length;
   let values = {
     year: new Date().getFullYear(),
@@ -72,9 +66,7 @@ const getLogValues = log => {
   log = log.substring(0, cutoff).trim();
 
   let workout, duration, timeUnit;
-  console.log('EXECUTING REGEX');
   let req = LOG.exec(log);
-  console.log('REGEX DONE');
   if (log.includes(' for ')) {
     workout = req[3];
     duration = req[6];
@@ -84,8 +76,6 @@ const getLogValues = log => {
     duration = req[11];
     timeUnit = req[13];
   }
-
-  console.log(values);
 
   return Object.assign(values, {
     duration,
@@ -109,11 +99,10 @@ const logResponse = (message, feedback, success = false) => {
 };
 
 const logWorkout = async message => {
-  console.log(message.content);
   //Verify this is a log message
   switch (isLogMessage(message.content)) {
     case 'no':
-      console.log('NAH');
+      console.log('NO');
       return;
     case 'maybe':
       message.reply(
@@ -121,11 +110,10 @@ const logWorkout = async message => {
       );
       return;
     case 'yes':
+      console.log('YES');
     default:
       break;
   }
-
-  console.log('IS LOG');
 
   let { attachments, channel, content, member, mentions } = message;
   let {
@@ -138,8 +126,6 @@ const logWorkout = async message => {
     workout,
     partners
   } = getLogValues(content);
-
-  console.log(date);
 
   member = new Member(member);
 
@@ -264,4 +250,7 @@ const logWorkout = async message => {
   return;
 };
 
-module.exports = logWorkout;
+module.exports = {
+  isLogMessage,
+  logWorkout
+};

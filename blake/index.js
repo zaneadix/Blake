@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const authToken = process.env.DISCORD_TOKEN;
 const crons = require('./crons');
-const logWorkout = require('./logWorkout');
+const { isLogMessage, logWorkout } = require('./logWorkout');
 
 const client = new Discord.Client();
 
@@ -20,12 +20,15 @@ client.on('message', async message => {
 
   if (author.bot) return;
 
-  if (channel.name === 'log-your-workout' || content.match(/^log /)) {
-    console.log('START LOG');
-    await logWorkout(message);
+  if (message.isMentioned(client.user)) {
+    if (content.match(new RegExp(`^${client.user}\\s+log `))) {
+      await logWorkout(message);
+      return;
+    }
   }
 
-  if (message.isMentioned(client.user)) {
-    message.reply('yes?');
+  if (channel.name === 'log-your-workout') {
+    await logWorkout(message);
+    return;
   }
 });

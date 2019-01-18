@@ -3,14 +3,18 @@ const formatDate = require('date-fns/format');
 const dayIsAfter = require('date-fns/is_after');
 const differenceInDays = require('date-fns/difference_in_days');
 
+const client = require('./client');
 const g = require('../google');
 const {
   flatDate,
   Member,
   MATCHERS,
+  REACTIONS,
   SUBMISSION_WINDOW,
   TIME_UNITS
 } = require('../utils');
+
+const failMessageCache = {};
 
 const MINUTE = /minutes?|mins?/i;
 const HOUR = /hours?|hrs?/i;
@@ -84,16 +88,46 @@ const getLogValues = log => {
   });
 };
 
-const logResponse = (message, feedback, success = false) => {
+const cacheResponse = (message, response) => {
+  failMessageCache[message.id] = failMessageCache[message.id] || {};
+  failMessageCache[message.id][response.id] = response;
+};
+
+const clearResponses = message => {
+  let responses = failMessageCache[message.id];
+  if (responses) {
+    Object.keys(responses).forEach(async responseId => {
+      let response = responses[responseId];
+      await response.delete();
+      delete responses[responseId];
+    });
+    delete failMessageCache[message.id];
+  }
+};
+
+const logResponse = async (message, feedback, success = false) => {
+  if (success) {
+    let failReaction = message.reactions.get(REACTIONS.FAILURE);
+    failReaction && (await failReaction.remove(client.user));
+  }
+
   message
-    .react(success ? '✅' : '❌')
-    .then(() => {})
+    .react(success ? REACTIONS.SUCCESS : REACTIONS.FAILURE)
+    .then(() => {
+      if (success) {
+        clearResponses(message);
+      }
+    })
     .catch(error => console.log(error));
 
   if (feedback) {
     message.channel
       .send(feedback)
-      .then(() => {})
+      .then(response => {
+        if (!success) {
+          cacheResponse(message, response);
+        }
+      })
       .catch(error => console.log(error));
   }
 };
@@ -105,12 +139,16 @@ const logWorkout = async message => {
       console.log('NO');
       return;
     case 'maybe':
-      message.reply(
-        'I think you might have just tried to submit a log. If so, please retry using the following format. fart fart fart fart'
-      );
+      message
+        .reply(
+          'I think you might have just tried to submit a log. If so, please retry using the following format. fart fart fart fart'
+        )
+        .then(response => {
+          cacheResponse(message, response);
+        })
+        .catch(error => console.log(error));
       return;
     case 'yes':
-      console.log('YES');
     default:
       break;
   }

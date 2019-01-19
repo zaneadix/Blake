@@ -19,14 +19,14 @@ Ran for 40 minutes on 2/22 with @ShaunT
 **Let's break things down**
 
 ```
-Exercise        Duration        Date           Partners
+Activity        Duration        Date           Partners
   [Ran]  for  [40 minutes]  { on [2/22] } { with [*mentions*] }
 ```
 
 - **order matters**
 - {} = optional
 - `for`, `on` and `with` are keywords i use to understand your message
-- `Exercise` - can be anything you did for your workout. This should only contain **alphabetical characters**, and the following **special characters: ( ) \ /**
+- `Activity` - can be anything you did for your workout. This should only contain **alphabetical characters**, and the following **special characters: ( ) \ /**
 - `Duration` - the amount of time you worked out.
   - number _CAN_ contain decimals
   - acceptable time units are min, mins, minutes, hr, hrs, hour, hours

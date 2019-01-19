@@ -136,12 +136,25 @@ const logWorkout = async message => {
   //Verify this is a log message
   switch (isLogMessage(message.content)) {
     case 'no':
-      console.log('NO');
       return;
     case 'maybe':
       message
         .reply(
-          'I think you might have just tried to submit a log. If so, please retry using the following format. fart fart fart fart'
+          `I think you might have just tried to submit a log.
+If so, please **edit your message**, following the guidelines below.
+**Make sure your log comes first in your message.**
+\`\`\`
+Activity        Duration        Date           Partners
+  [Ran]  for  [40 minutes]  { on [2/22] } { with [*mentions*] }
+
+Examples:
+Biked to work for 30 min
+Cartwheels for 1 hr
+Jumped up and down for 2 hours on 2/22
+Punched bricks for 10 minutes with @ShaunT @TonyH @myCat
+Ran in circles for 12 hrs on 1/1 with @mom, @sister and @dad
+Gym (wights/cardio) for 1.5 hours
+\`\`\``
         )
         .then(response => {
           cacheResponse(message, response);

@@ -30,7 +30,7 @@ const LOG = new RegExp(
   }\\s+of\\s+${WORKOUT.source}))`
 );
 const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'ig');
-const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)?(?!.)/i;
+const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)/i;
 
 const isLogMessage = content => {
   let result = LOG.test(content);

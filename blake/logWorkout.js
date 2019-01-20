@@ -15,6 +15,7 @@ const {
 } = require('../utils');
 
 const failMessageCache = {};
+const logChannelName = 'log-your-workout';
 
 const MINUTE = /minutes?|mins?/i;
 const HOUR = /hours?|hrs?/i;
@@ -32,14 +33,49 @@ const LOG = new RegExp(
 const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'ig');
 const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)/i;
 
-const isLogMessage = content => {
-  let result = LOG.test(content);
-  if (!result) {
-    result = POSSIBLE_LOG.test(content) ? 'maybe' : 'no';
+const isLogMessage = async message => {
+  let possibility = LOG.test(message.content);
+  let isLog = false;
+  if (!possibility) {
+    possibility = POSSIBLE_LOG.test(message.content) ? 'maybe' : 'no';
   } else {
-    result = 'yes';
+    possibility = 'yes';
+    isLog = true;
   }
-  return result;
+
+  switch (possibility) {
+    case 'no':
+      return;
+    case 'maybe':
+      await message
+        .reply(
+          `I think you might have just tried to submit a log.
+If so, please **edit your message**, following the guidelines below.
+**Make sure your log comes first in your message.**
+\`\`\`
+Activity        Duration        Date           Partners
+  [Ran]  for  [40 minutes]  { on [2/22] } { with [*mentions*] }
+
+Examples:
+Biked to work for 30 min
+Cartwheels for 1 hr
+Jumped up and down for 2 hours on 2/22
+Punched bricks for 10 minutes with @ShaunT @TonyH @myCat
+Ran in circles for 12 hrs on 1/1 with @mom, @sister and @dad
+Gym (wights/cardio) for 1.5 hours
+\`\`\``
+        )
+        .then(response => {
+          cacheResponse(message, response);
+        })
+        .catch(error => console.log(error));
+      return;
+    case 'yes':
+    default:
+      break;
+  }
+
+  return isLog;
 };
 
 const getLogValues = log => {
@@ -133,37 +169,14 @@ const logResponse = async (message, feedback, success = false) => {
 };
 
 const logWorkout = async message => {
-  //Verify this is a log message
-  switch (isLogMessage(message.content)) {
-    case 'no':
-      return;
-    case 'maybe':
-      message
-        .reply(
-          `I think you might have just tried to submit a log.
-If so, please **edit your message**, following the guidelines below.
-**Make sure your log comes first in your message.**
-\`\`\`
-Activity        Duration        Date           Partners
-  [Ran]  for  [40 minutes]  { on [2/22] } { with [*mentions*] }
-
-Examples:
-Biked to work for 30 min
-Cartwheels for 1 hr
-Jumped up and down for 2 hours on 2/22
-Punched bricks for 10 minutes with @ShaunT @TonyH @myCat
-Ran in circles for 12 hrs on 1/1 with @mom, @sister and @dad
-Gym (wights/cardio) for 1.5 hours
-\`\`\``
-        )
-        .then(response => {
-          cacheResponse(message, response);
-        })
-        .catch(error => console.log(error));
-      return;
-    case 'yes':
-    default:
-      break;
+  if (message.channel.name !== logChannelName) {
+    logResponse(
+      message,
+      `**This submission has NOT been recorded**. ${
+        message.author
+      }, make sure to log your activity in the **${logChannelName}** channel.`
+    );
+    return;
   }
 
   let { attachments, channel, content, member, mentions } = message;

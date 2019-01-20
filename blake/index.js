@@ -1,8 +1,9 @@
 const client = require('./client');
 const crons = require('./crons');
-const { logWorkout } = require('./logWorkout');
+const { isLogMessage, logWorkout } = require('./logWorkout');
 const { REACTIONS } = require('../utils');
 
+let logChannelName = 'log-your-workout';
 let commandMatcher;
 
 client.on('ready', () => {
@@ -27,13 +28,14 @@ async function handleMessage(message) {
 
   if (message.isMentioned(client.user)) {
     let command = (commandMatcher.exec(content) || [])[1];
-    console.log(command);
 
     switch (command) {
       case 'help':
 
       case 'log':
-        await logWorkout(message);
+        if (isLogMessage(message)) {
+          await logWorkout(message);
+        }
         return;
 
       case undefined:
@@ -47,8 +49,7 @@ async function handleMessage(message) {
     }
   }
 
-  if (channel.name === 'log-your-workout') {
+  if (isLogMessage(message)) {
     await logWorkout(message);
-    return;
   }
 }

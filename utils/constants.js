@@ -12,6 +12,7 @@ const COLORS = {
 };
 
 const MATCHERS = {
+  COMMANDS: /<@!?\d+>\s+([a-z]+)/i,
   IMAGE_EXTS: /\.(jpe?g|tiff|png)$/i
 };
 

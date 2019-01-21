@@ -94,9 +94,22 @@ const getWorkoutCounts = async (fromDate, toDate) => {
 
   let dateMap = {};
   let memberMap = {};
+
+  tallyData.values.shift();
+  tallyData.values.map(row => {
+    let id = row[LOG_COLUMNS.ID];
+    let username = row[LOG_COLUMNS.MEMBER];
+    memberMap[id] = memberMap[id] || {
+      username,
+      workoutsLogged: 0,
+      daysWorkedOut: 0,
+      yearTotal: parseInt(row[TALLY_COLUMNS.TOTAL])
+    };
+  });
+
   dataSets.map(({ values }) => {
     values.shift();
-    values.map(row => {
+    values.forEach(row => {
       let dateValue = `${row[LOG_COLUMNS.DATE]} ${year}`; // MMM DD YYYY
       dateMap[dateValue] = dateMap[dateValue] || flatDate(new Date(dateValue)); //currentTimeZone(new Date(dateValue));
 
@@ -104,30 +117,18 @@ const getWorkoutCounts = async (fromDate, toDate) => {
         isAfter(dateMap[dateValue], fromDate) &&
         isBefore(dateMap[dateValue], toDate)
       ) {
-        let member = row[LOG_COLUMNS.ID];
-        memberMap[member] = memberMap[member] || {
-          username: '',
-          workoutsLogged: 0,
-          daysWorkedOut: 0,
-          yearTotal: 0
-        };
+        let id = row[LOG_COLUMNS.ID];
 
-        memberMap[member].workoutsLogged++;
+        memberMap[id].workoutsLogged++;
 
-        memberMap[member].username =
-          memberMap[member].username || row[LOG_COLUMNS.MEMBER];
+        // use most recent username?
+        memberMap[id].username =
+          memberMap[id].username || row[LOG_COLUMNS.MEMBER];
 
         row[LOG_COLUMNS.FIRST_OF_DAY] === 'yes' &&
-          memberMap[member].daysWorkedOut++;
+          memberMap[id].daysWorkedOut++;
       }
     });
-  });
-
-  tallyData.values.forEach(row => {
-    let id = row[TALLY_COLUMNS.ID];
-    if (memberMap[id]) {
-      memberMap[id].yearTotal = parseInt(row[TALLY_COLUMNS.TOTAL]);
-    }
   });
 
   return memberMap;

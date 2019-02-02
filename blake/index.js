@@ -1,9 +1,9 @@
 const client = require('./client');
 const crons = require('./crons');
+const { provideHelp, updateHelpMenu } = require('./provideHelp');
 const { isLogMessage, logWorkout } = require('./logWorkout');
 const { REACTIONS } = require('../utils');
 
-let logChannelName = 'log-your-workout';
 let commandMatcher;
 
 client.on('ready', () => {
@@ -12,10 +12,15 @@ client.on('ready', () => {
   crons(client);
 });
 
+client.on('messageReactionAdd', (reaction, user) => {
+  updateHelpMenu(reaction, user);
+});
+
 client.on('message', handleMessage);
 
 client.on('messageUpdate', async (original, edit) => {
   let success = edit.reactions.get(REACTIONS.SUCCESS);
+
   if (!success || !success.users.get(client.user.id)) {
     handleMessage(edit);
   }
@@ -31,11 +36,18 @@ async function handleMessage(message) {
 
     switch (command) {
       case 'help':
+        provideHelp(message);
+        return;
 
       case 'log':
         if (isLogMessage(message)) {
           await logWorkout(message);
         }
+        return;
+
+      case 'thank':
+      case 'thanks':
+        message.channel.send(`You heckin' betchya, ${message.author}!`);
         return;
 
       case undefined:
@@ -49,7 +61,8 @@ async function handleMessage(message) {
     }
   }
 
-  if (isLogMessage(message)) {
+  let isLog = isLogMessage(message);
+  if (isLog) {
     await logWorkout(message);
   }
 }

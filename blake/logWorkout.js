@@ -33,7 +33,7 @@ const LOG = new RegExp(
 const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'ig');
 const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)/i;
 
-const isLogMessage = async message => {
+const isLogMessage = message => {
   let possibility = LOG.test(message.content);
   let isLog = false;
   if (!possibility) {
@@ -44,10 +44,8 @@ const isLogMessage = async message => {
   }
 
   switch (possibility) {
-    case 'no':
-      return;
     case 'maybe':
-      await message
+      message
         .reply(
           `I think you might have just tried to submit a log.
 If so, please **edit your message**, following the guidelines below.
@@ -305,7 +303,7 @@ const logWorkout = async message => {
 
     channel
       .send(
-        `Hey! ${mentions}! I've logged workout for ${eachOf}you on behalf of ${logger}. Team work!`
+        `Hey! ${mentions}! I've logged activty for ${eachOf}you on behalf of ${logger}. Team work!`
       )
       .then(() => {})
       .catch(error => console.log(error));

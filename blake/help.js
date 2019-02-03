@@ -15,9 +15,6 @@ class ManualPage {
       footer: {
         text: `I've got your back 👍`
       }
-      // thumbnail: {
-      //   url: 'https://i.imgur.com/BIpxXlI.png'
-      // }
     };
     Object.assign(this.embed, params);
   }
@@ -27,18 +24,61 @@ let commands = {
   activity: {
     icon: '📈',
     name: 'Activity',
-    summary: 'get an activity summary',
-    format: `activity [since {date}] [of {mention}]`,
-    detail: 'put your boogers on the urinal wall you nip sticker'
+    summary: 'get a direct message summary of a users activity',
+    format: `activity [of {member}] [from {date}] [to {date}]`,
+    detail: ['get a direct message summary of a users activity.', '-----'].join(
+      '\n'
+    ),
+    fields: [
+      {
+        name: '**Default Behavior**',
+        value: [
+          "If you _don't_ specify a _member_, _from_ or _to_ date, you will get a summary of _your_ the last _10 days_.",
+          '-----'
+        ].join('\n')
+      },
+      {
+        name: '**Of** _optional_',
+        value: [
+          'the member you would like a summary of',
+          '_Format_ : `@tommy`',
+          '-----'
+        ].join('\n')
+      },
+      {
+        name: '**From / To** _optional_',
+        value: [
+          'the _start_ and _end_ date of the summary range',
+          '_Format_ : `MM/DD`',
+          '_Example_ : `from 2/22`',
+          '-----'
+        ].join('\n')
+      },
+      {
+        name: '**Example Commands**',
+        value: [
+          '```',
+          'activity',
+          '',
+          'activity from 1/20',
+          '',
+          'activity from 1/20 to 2/10',
+          '',
+          'activity of @tommy from 1/15',
+          '```'
+        ].join('\n')
+      }
+    ]
   },
   help: {
     icon: '❓',
     name: 'Help',
     summary: 'get general or detailed help',
     format: `help [command]`,
-    detail: ['The help gives guidance on how to work with me.', '-----'].join(
-      '\n'
-    ),
+    detail: [
+      'The help command gives guidance on how to work with me.',
+      '-----'
+    ].join('\n'),
     fields: [
       {
         name: '**Default Behavior**',

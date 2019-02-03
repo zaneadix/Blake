@@ -8,13 +8,34 @@ const { flatDate } = require('../utils');
 
 const FROM = /\s+from\s+((\d+)\/(\d+)(\/(\d+))?)/i;
 const TO = /\s+to\s+((\d+)\/(\d+)(\/(\d+))?)/i;
-const ACTIVITY = new RegExp(`activity((${FROM.source})?(${TO.source})?)?`);
+const OF = /\s+of\s+(<@!?(\d+)>)/i;
+const ACTIVITY = new RegExp(
+  `activity(${OF.source})?((${FROM.source})?(${TO.source})?)?`
+);
 
-const getDates = message => {
-  let [, , , from, fMonth, fDay, , , , to, tMonth, tDay] = ACTIVITY.exec(
-    message.content
-  );
+const getActivityValues = message => {
+  let [
+    ,
+    ,
+    ,
+    memberId,
+    ,
+    ,
+    from,
+    fMonth,
+    fDay,
+    ,
+    ,
+    ,
+    to,
+    tMonth,
+    tDay
+  ] = ACTIVITY.exec(message.content);
 
+  console.log(memberId);
+
+  let member =
+    message.mentions.users.find(user => user.id === memberId) || message.author;
   let year = new Date().getFullYear();
   let toDate = to ? new Date(year, tMonth - 1, tDay) : flatDate();
   toDate = addDays(toDate, 1);
@@ -22,6 +43,7 @@ const getDates = message => {
   fromDate = subDays(fromDate, 1);
 
   return {
+    member,
     year,
     fromDate,
     toDate
@@ -29,14 +51,24 @@ const getDates = message => {
 };
 
 const getActivity = async message => {
-  let { year, fromDate, toDate } = getDates(message);
+  let { member, year, fromDate, toDate } = getActivityValues(message);
+  let fromPrint = formatDate(addDays(fromDate, 1), 'MMM Do');
+  let toPrint = formatDate(toDate, 'MMM Do');
 
   let data;
   try {
-    data = await g.getLogsInRange(message.author, fromDate, toDate);
+    data = await g.getLogsInRange(member.id, fromDate, toDate);
   } catch (error) {
     throw error;
   }
+
+  if (!data.length) {
+    message.author.send(
+      `I wasn't able to find any logged activity for **${member}** within the range of **${fromPrint}** to **${toPrint}**`
+    );
+    return;
+  }
+
   data = data.map(log => {
     return [
       log.activity,
@@ -48,10 +80,7 @@ const getActivity = async message => {
 
   let description = [
     "Here's **your** summary of activity",
-    `from **${formatDate(addDays(fromDate, 1), 'MMM Do')}** to **${formatDate(
-      toDate,
-      'MMM Do'
-    )}**`,
+    `from **${fromPrint}** to **${toPrint}**`,
     '\xa0\xa0\xa0_Activity_ - The completed activity',
     '\xa0\xa0\xa0_Dur_(ation) - Time spent active',
     '\xa0\xa0\xa0_Date_ - Date active',

@@ -101,7 +101,7 @@ const filterLogs = (months, fromDate, toDate, onMatch) => {
   });
 };
 
-const getLogsInRange = async (member, fromDate, toDate) => {
+const getLogsInRange = async (memberId, fromDate, toDate) => {
   let data;
   try {
     data = await getDataFrom(fromDate);
@@ -113,7 +113,7 @@ const getLogsInRange = async (member, fromDate, toDate) => {
   let logs = [];
 
   filterLogs(months, fromDate, toDate, row => {
-    if (row[LOG_COLUMNS.ID] === member.id) {
+    if (row[LOG_COLUMNS.ID] === memberId) {
       logs.push({
         activity: row[LOG_COLUMNS.EXERCISE],
         duration: row[LOG_COLUMNS.DURATION],

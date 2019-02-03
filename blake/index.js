@@ -1,7 +1,8 @@
 const client = require('./client');
 const crons = require('./crons');
-const { provideHelp, updateHelpMenu } = require('./provideHelp');
-const { isLogMessage, logWorkout } = require('./logWorkout');
+const { provideHelp, updateHelpMenu } = require('./help');
+const { getActivity } = require('./activity');
+const { isLogMessage, logWorkout } = require('./log');
 const { REACTIONS } = require('../utils');
 
 let commandMatcher;
@@ -37,6 +38,10 @@ async function handleMessage(message) {
     switch (command) {
       case 'help':
         provideHelp(message);
+        return;
+
+      case 'activity':
+        await getActivity(message);
         return;
 
       case 'log':

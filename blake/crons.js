@@ -42,7 +42,7 @@ const crons = client => {
     let from = subDays(to, 8);
     let counts;
     try {
-      counts = await g.getWorkoutCounts(from, to);
+      counts = await g.getActivityCountsInRange(from, to);
     } catch (error) {
       console.log('Failed to get weekley results');
       console.log(error);

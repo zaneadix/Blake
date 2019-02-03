@@ -2,7 +2,6 @@ const Discord = require('discord.js');
 const _find = require('lodash/find');
 const client = require('./client');
 
-// let helpMenu, menuTimeoutID;
 let helpMenus = {};
 let embedColor = 0xfbc02d;
 let commandMatcher = /help ([a-z]+)/;

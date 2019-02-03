@@ -12,16 +12,6 @@ const templateLogWorkout = require('./templateLogWorkout');
 
 let directoryID = process.env.TFC_DIRECTORY_ID;
 
-// FOR TESTING
-// let members = [
-//   new Member({ user: { id: "a111", username: "Steven" }, nickname: "Soots" }),
-//   new Member({ user: { id: "a112", username: "McFarts" }, nickname: "Poots" }),
-//   new Member({ user: { id: "a113", username: "Borsin" }, nickname: "Boots" }),
-//   new Member({ user: { id: "a114", username: "Thomas" }, nickname: "Toots" }),
-//   new Member({ user: { id: "a115", username: "Angela" }, nickname: "Bertha" }),
-//   new Member({ user: { id: "a116", username: "Florence" }, nickname: "Foots" })
-// ];
-
 let g = {
   drive: google.drive({ version: 'v3' }),
   sheets: google.sheets({ version: 'v4' }),
@@ -59,17 +49,10 @@ const fetchData = async (workoutLog, months) => {
   return result;
 };
 
-/**
- * Within a range of two dates (exclusive), get
- * - Days worked out
- * - Workouts Logged
- * As well as
- * - Total workouts for the year
- */
-const getWorkoutCounts = async (fromDate, toDate) => {
-  let date = flatDate(); //currentTimeZone();
+const getDataFrom = async fromDate => {
+  let date = flatDate();
   let year = date.getFullYear();
-  let workoutLog, tallyData;
+  let workoutLog;
 
   try {
     workoutLog = await getWorkoutLog(g, directoryID, year);
@@ -78,25 +61,93 @@ const getWorkoutCounts = async (fromDate, toDate) => {
   }
 
   let diff = calendarMonthsDiff(date, fromDate);
-  let months = [formatDate(date, 'MMM')];
+  let monthNames = [formatDate(date, 'MMM')];
   for (let i = 0; i < diff; i++) {
     date = subMonths(date, 1);
-    months.push(formatDate(date, 'MMM'));
+    monthNames.push(formatDate(date, 'MMM'));
   }
 
-  let dataSets;
+  let months;
+  let tally;
   try {
-    dataSets = await fetchData(workoutLog, months);
-    tallyData = dataSets.shift(); //no need for tallies as of yet
+    months = await fetchData(workoutLog, monthNames);
+    tally = months.shift();
   } catch (error) {
     throw error;
   }
 
+  return {
+    months,
+    tally
+  };
+};
+
+const filterLogs = (months, fromDate, toDate, onMatch) => {
+  let year = new Date().getFullYear();
   let dateMap = {};
+  months.forEach(({ values }) => {
+    values.shift();
+    values.forEach(row => {
+      let dateValue = `${row[LOG_COLUMNS.DATE]} ${year}`; //date key
+      dateMap[dateValue] = dateMap[dateValue] || flatDate(new Date(dateValue));
+
+      if (
+        isAfter(dateMap[dateValue], fromDate) &&
+        isBefore(dateMap[dateValue], toDate)
+      ) {
+        onMatch(row);
+      }
+    });
+  });
+};
+
+const getLogsInRange = async (member, fromDate, toDate) => {
+  let data;
+  try {
+    data = await getDataFrom(fromDate);
+  } catch (error) {
+    throw error;
+  }
+
+  let { months } = data;
+  let logs = [];
+
+  filterLogs(months, fromDate, toDate, row => {
+    if (row[LOG_COLUMNS.ID] === member.id) {
+      logs.push({
+        activity: row[LOG_COLUMNS.EXERCISE],
+        duration: row[LOG_COLUMNS.DURATION],
+        date: row[LOG_COLUMNS.DATE],
+        picture: row[LOG_COLUMNS.PICTURE],
+        firstOfDay: row[LOG_COLUMNS.FIRST_OF_DAY]
+      });
+    }
+  });
+
+  return logs;
+};
+
+/**
+ * Within a range of two dates (exclusive), get
+ * - Days worked out
+ * - Workouts Logged
+ * As well as
+ * - Total workouts for the year
+ */
+const getActivityCountsInRange = async (fromDate, toDate) => {
+  let data;
+  try {
+    data = await getDataFrom(fromDate);
+  } catch (error) {
+    throw error;
+  }
+
+  let { months, tally } = data;
+
   let memberMap = {};
 
-  tallyData.values.shift();
-  tallyData.values.map(row => {
+  tally.values.shift();
+  tally.values.map(row => {
     let id = row[LOG_COLUMNS.ID];
     let username = row[LOG_COLUMNS.MEMBER];
     memberMap[id] = memberMap[id] || {
@@ -107,28 +158,12 @@ const getWorkoutCounts = async (fromDate, toDate) => {
     };
   });
 
-  dataSets.map(({ values }) => {
-    values.shift();
-    values.forEach(row => {
-      let dateValue = `${row[LOG_COLUMNS.DATE]} ${year}`; // MMM DD YYYY
-      dateMap[dateValue] = dateMap[dateValue] || flatDate(new Date(dateValue)); //currentTimeZone(new Date(dateValue));
-
-      if (
-        isAfter(dateMap[dateValue], fromDate) &&
-        isBefore(dateMap[dateValue], toDate)
-      ) {
-        let id = row[LOG_COLUMNS.ID];
-
-        memberMap[id].workoutsLogged++;
-
-        // use most recent username?
-        memberMap[id].username =
-          memberMap[id].username || row[LOG_COLUMNS.MEMBER];
-
-        row[LOG_COLUMNS.FIRST_OF_DAY] === 'yes' &&
-          memberMap[id].daysWorkedOut++;
-      }
-    });
+  filterLogs(months, fromDate, toDate, row => {
+    let id = row[LOG_COLUMNS.ID];
+    memberMap[id].workoutsLogged++;
+    // use most recent username?
+    // memberMap[id].username = memberMap[id].username || row[LOG_COLUMNS.MEMBER];
+    row[LOG_COLUMNS.FIRST_OF_DAY] === 'yes' && memberMap[id].daysWorkedOut++;
   });
 
   return memberMap;
@@ -192,4 +227,4 @@ const tallyWorkout = async ({
   }
 };
 
-module.exports = { getWorkoutCounts, tallyWorkout };
+module.exports = { getLogsInRange, getActivityCountsInRange, tallyWorkout };

@@ -254,22 +254,30 @@ const handleHelpRequest = async mr => {
   //Remove help menu after 10 minutes of inactivity
   menu.timeoutID && clearTimeout(menu.timeoutID);
   menu.timeoutID = setTimeout(async () => {
-    await menu.message.clearReactions();
-    await menu.message.edit(
-      new ManualPage({
-        thumbnail: {},
-        description: `This help menu has expired. Hit me up for help anytime using \`@${
-          client.user.username
-        } help\``
-      })
-    );
-    delete helpMenus[channel.id];
+    try {
+      await menu.message.clearReactions();
+      await menu.message.edit(
+        new ManualPage({
+          thumbnail: {},
+          description: `This help menu has expired. Hit me up for help anytime using \`@${
+            client.user.username
+          } help\``
+        })
+      );
+      delete helpMenus[channel.id];
+    } catch (error) {
+      console.log(error);
+    }
   }, 600000); //10 minutes
 
   if (shouldInit) {
-    buttons.forEach(async button => {
-      await menu.message.react(button);
-    });
+    try {
+      buttons.forEach(async button => {
+        await menu.message.react(button);
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 };
 

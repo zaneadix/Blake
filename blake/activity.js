@@ -59,7 +59,7 @@ const getActivity = async message => {
   try {
     data = await g.getLogsInRange(member.id, fromDate, toDate);
   } catch (error) {
-    throw error;
+    console.log(error);
   }
 
   if (!data.length) {
@@ -124,7 +124,11 @@ const getActivity = async message => {
     let response = i === 0 ? description : '';
     response = response.concat('```' + output.toString() + '```');
 
-    await message.author.send(response);
+    try {
+      await message.author.send(response);
+    } catch (error) {
+      console.log(error);
+    }
   }
 };
 

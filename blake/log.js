@@ -15,7 +15,7 @@ const {
 } = require('../utils');
 
 const failMessageCache = {};
-const logChannelName = 'log-your-workout';
+// const logChannelName = 'log-your-workout';
 
 const MINUTE = /minutes?|mins?/i;
 const HOUR = /hours?|hrs?/i;
@@ -167,15 +167,15 @@ const logResponse = async (message, feedback, success = false) => {
 };
 
 const logWorkout = async message => {
-  if (message.channel.name !== logChannelName) {
-    logResponse(
-      message,
-      `**This submission has NOT been recorded**. ${
-        message.author
-      }, make sure to log your activity in the **${logChannelName}** channel.`
-    );
-    return;
-  }
+  // if (message.channel.name !== logChannelName) {
+  //   logResponse(
+  //     message,
+  //     `**This submission has NOT been recorded**. ${
+  //       message.author
+  //     }, make sure to log your activity in the **${logChannelName}** channel.`
+  //   );
+  //   return;
+  // }
 
   let { attachments, channel, content, member, mentions } = message;
   let {

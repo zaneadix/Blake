@@ -74,7 +74,7 @@ const crons = client => {
   *Logged* - Total workouts logged this week.
   *Days* - Total days worked out this week.
   *Year* - Total days worked out this year`;
-    let channel = getChannel(client, 'general');
+    let channel = getChannel(client, 'home');
     if (channel) {
       channel.send(message + '```' + output.toString() + '```');
     }

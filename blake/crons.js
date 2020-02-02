@@ -38,7 +38,7 @@ const crons = client => {
    * FROM: 8 days ago
    * TO: Today at 00:00;
    */
-  const weekleyResult = schedule.scheduleJob("*/5 * * * * *", async () => {
+  const weekleyResult = schedule.scheduleJob('0 6 * * 1', async () => {
     let to = flatDate();
     let from = subDays(to, 8);
     let counts;
@@ -63,7 +63,7 @@ const crons = client => {
     });
     data.sort((a, b) => b[2] - a[2]);
 
-    
+
     let messages = _chunk(data, 10).map((chunk, index) => {
 
       if (index === 0) {

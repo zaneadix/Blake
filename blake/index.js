@@ -28,6 +28,8 @@ client.on('messageUpdate', async (original, edit) => {
 });
 
 async function handleMessage(message) {
+  console.log(message);
+  console.log(new Date(message.createdTimestamp))
   let { author, channel, content } = message;
 
   if (author.bot) return;

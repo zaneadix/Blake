@@ -37,7 +37,7 @@ const crons = client => {
    * FROM: 8 days ago
    * TO: Today at 00:00;
    */
-  const weekleyResult = schedule.scheduleJob('0 6 * * 1', async () => {
+  const weekleyResult = schedule.scheduleJob("*/30 * * * * *", async () => {
     let to = flatDate();
     let from = subDays(to, 8);
     let counts;
@@ -79,6 +79,7 @@ const crons = client => {
       channel.send(message + '```' + output.toString() + '```');
     }
   });
+
   /**
    * First day of every month
    * I'm looking for workouts between (exclusive)

@@ -1,25 +1,26 @@
-const client = require('./client');
-const crons = require('./crons');
-const { provideHelp, updateHelpMenu } = require('./help');
-const { getActivity } = require('./activity');
-const { isLogMessage, logWorkout } = require('./log');
-const { REACTIONS } = require('../utils');
+const client = require("./client");
+const crons = require("./crons");
+const { provideHelp, updateHelpMenu } = require("./help");
+const { getActivity } = require("./activity");
+const { isLogMessage, logWorkout } = require("./log");
+const { handleTimeZone } = require("./timeZone");
+const { REACTIONS } = require("../utils");
 
 let commandMatcher;
 
-client.on('ready', () => {
-  console.log(client.user.username, 'is up and running.');
-  commandMatcher = new RegExp(`^${client.user}\\s+([a-z]+)`);
+client.on("ready", () => {
+  console.log(client.user.username, "is up and running.");
+  commandMatcher = new RegExp(`^<@!${client.user.id}>\\s+([a-z]+)`);
   crons(client);
 });
 
-client.on('messageReactionAdd', (reaction, user) => {
+client.on("messageReactionAdd", (reaction, user) => {
   updateHelpMenu(reaction, user);
 });
 
-client.on('message', handleMessage);
+client.on("message", handleMessage);
 
-client.on('messageUpdate', async (original, edit) => {
+client.on("messageUpdate", async (original, edit) => {
   let success = edit.reactions.get(REACTIONS.SUCCESS);
 
   if (!success || !success.users.get(client.user.id)) {
@@ -28,8 +29,6 @@ client.on('messageUpdate', async (original, edit) => {
 });
 
 async function handleMessage(message) {
-  console.log(message);
-  console.log(new Date(message.createdTimestamp))
   let { author, channel, content } = message;
 
   if (author.bot) return;
@@ -38,23 +37,28 @@ async function handleMessage(message) {
     let command = (commandMatcher.exec(content) || [])[1];
 
     switch (command) {
-      case 'help':
+      case "help":
         provideHelp(message);
         return;
 
-      case 'activity':
+      case "activity":
         await getActivity(message);
         return;
 
-      case 'log':
+      case "log":
         if (isLogMessage(message)) {
           await logWorkout(message);
         }
         return;
 
-      case 'thank':
-      case 'thanks':
+      case "thank":
+      case "thanks":
         message.channel.send(`You heckin' betchya, ${message.author}!`);
+        return;
+
+      case "tz":
+      case "timezone":
+        await handleTimeZone(message);
         return;
 
       case undefined:

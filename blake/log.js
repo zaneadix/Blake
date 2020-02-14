@@ -1,50 +1,49 @@
-const _uniq = require('lodash/uniq');
-const formatDate = require('date-fns/format');
-const dayIsAfter = require('date-fns/is_after');
-const differenceInDays = require('date-fns/difference_in_days');
+const _uniq = require("lodash/uniq");
+const formatDate = require("date-fns/format");
+const dayIsAfter = require("date-fns/isAfter");
+const differenceInDays = require("date-fns/differenceInDays");
 
-const client = require('./client');
-const g = require('../google');
+const client = require("./client");
+const { getUserData } = require("../db");
+const g = require("../google");
 const {
+  adjustedNow,
   flatDate,
   Member,
   MATCHERS,
   REACTIONS,
   SUBMISSION_WINDOW,
   TIME_UNITS
-} = require('../utils');
+} = require("../utils");
 
 const failMessageCache = {};
 // const logChannelName = 'log-your-workout';
 
 const MINUTE = /minutes?|mins?/i;
 const HOUR = /hours?|hrs?/i;
-const DATE_V = /^((\d+\.{1}\d+)|(\.?\d+))$/i;
 const WORKOUT = /((['()/\\\w]+\s?)+)/i;
 const TIME = /(((\d.?)+)\s*?([a-z]+))/i; //need to validate number using DURATION
 const DATE = /\s+on\s+((\d+)\/(\d+)(\/(\d+))?)/i;
 const PARTNERS = /\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+/i;
 
 const LOG = new RegExp(
-  `^((${WORKOUT.source}\\s+for\\s+${TIME.source})|(<@!?\\d+>\\s+log\\s+${
-    TIME.source
-  }\\s+of\\s+${WORKOUT.source}))`
+  `^((${WORKOUT.source}\\s+for\\s+${TIME.source})|(<@!?\\d+>\\s+log\\s+${TIME.source}\\s+of\\s+${WORKOUT.source}))`
 );
-const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'ig');
+const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, "ig");
 const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)/i;
 
 const isLogMessage = message => {
   let possibility = LOG.test(message.content);
   let isLog = false;
   if (!possibility) {
-    possibility = POSSIBLE_LOG.test(message.content) ? 'maybe' : 'no';
+    possibility = POSSIBLE_LOG.test(message.content) ? "maybe" : "no";
   } else {
-    possibility = 'yes';
+    possibility = "yes";
     isLog = true;
   }
 
   switch (possibility) {
-    case 'maybe':
+    case "maybe":
       message
         .reply(
           `I think you might have just tried to submit a log.
@@ -68,7 +67,7 @@ Gym (wights/cardio) for 1.5 hours
         })
         .catch(error => console.log(error));
       return;
-    case 'yes':
+    case "yes":
     default:
       break;
   }
@@ -87,8 +86,8 @@ const getLogValues = log => {
   while ((option = LOG_OPTIONS.exec(log))) {
     let match = option[0].trim();
     cutoff = option.index < cutoff ? option.index : cutoff;
-    switch (match.split(' ')[0]) {
-      case 'on':
+    switch (match.split(" ")[0]) {
+      case "on":
         values = Object.assign(values, {
           date: option[2],
           month: option[3],
@@ -96,7 +95,7 @@ const getLogValues = log => {
           year: option[6] ? `20${option[6]}` : values.year
         });
         break;
-      case 'with':
+      case "with":
         values.partners = option[0].match(/\d+/g) || [];
     }
   }
@@ -105,11 +104,11 @@ const getLogValues = log => {
 
   let workout, duration, timeUnit;
   let req = LOG.exec(log);
-  if (log.includes(' for ')) {
+  if (log.includes(" for ")) {
     workout = req[3];
     duration = req[6];
     timeUnit = req[8];
-  } else if (log.includes(' of ')) {
+  } else if (log.includes(" of ")) {
     workout = req[14];
     duration = req[11];
     timeUnit = req[13];
@@ -167,17 +166,7 @@ const logResponse = async (message, feedback, success = false) => {
 };
 
 const logWorkout = async message => {
-  // if (message.channel.name !== logChannelName) {
-  //   logResponse(
-  //     message,
-  //     `**This submission has NOT been recorded**. ${
-  //       message.author
-  //     }, make sure to log your activity in the **${logChannelName}** channel.`
-  //   );
-  //   return;
-  // }
-
-  let { attachments, channel, content, member, mentions } = message;
+  let { attachments, author, channel, content, member, mentions } = message;
   let {
     date,
     day,
@@ -189,17 +178,18 @@ const logWorkout = async message => {
     partners
   } = getLogValues(content);
 
+  let userData = getUserData(author);
   member = new Member(member);
 
   if (MINUTE.test(timeUnit)) {
-    timeUnit = 'minute';
+    timeUnit = "minute";
   } else if (HOUR.test(timeUnit)) {
-    timeUnit = 'hour';
+    timeUnit = "hour";
   } else {
     logResponse(
       message,
       `Sorry, ${member}! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
-        ', '
+        ", "
       )}*`
     );
     return;
@@ -226,6 +216,7 @@ const logWorkout = async message => {
     // Month without -1 puts it into next month
     // Day set to zero brings it back to last day of current month;
     let dayCount = new Date(year, month, 0).getDate();
+
     if (!(day >= 1 && day <= dayCount)) {
       logResponse(
         message,
@@ -254,6 +245,8 @@ const logWorkout = async message => {
 
   date = date || flatDate(); //default date is today
 
+  console.log("DATE", adjustedNow(userData.timeZone));
+
   //Get all members
   let members = [member];
   partners.forEach(partnerId => {
@@ -279,15 +272,13 @@ const logWorkout = async message => {
       workout,
       duration: `${duration} ${timeUnit}`,
       date,
-      logTime: formatDate(new Date(), 'M-D-YY h:mm:ssa'), // may need current timezone?
+      logTime: formatDate(new Date(), "M-d-yy h:mm:ssa"), // may need current timezone?
       imageURL: image && image.url
     });
   } catch (error) {
     logResponse(
       message,
-      `Oh crap, ${member}! I tried to log your workout but got this error. **${
-        error.message
-      }**.`
+      `Oh crap, ${member}! I tried to log your workout but got this error. **${error.message}**.`
     );
     return;
   }
@@ -297,9 +288,9 @@ const logWorkout = async message => {
   if (members.length > 1) {
     let logger = members.shift();
     members = members.map(member => member.toString());
-    let eachOf = members.length > 1 ? 'each of ' : '';
-    let end = members.splice(-2).join(' and ');
-    let mentions = [...members, end].join(', ');
+    let eachOf = members.length > 1 ? "each of " : "";
+    let end = members.splice(-2).join(" and ");
+    let mentions = [...members, end].join(", ");
 
     channel
       .send(

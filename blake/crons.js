@@ -1,12 +1,12 @@
-const schedule = require('node-schedule');
-const { table } = require('table');
-const formatDate = require('date-fns/format');
-const addDays = require('date-fns/add_days');
-const subDays = require('date-fns/sub_days');
-const _chunk = require('lodash/chunk');
+const schedule = require("node-schedule");
+const { table } = require("table");
+const formatDate = require("date-fns/format");
+const add = require("date-fns/add");
+const sub = require("date-fns/sub");
+const _chunk = require("lodash/chunk");
 
-const g = require('../google');
-const { flatDate } = require('../utils');
+const g = require("../google");
+const { flatDate } = require("../utils");
 const GUILD_ID = process.env.TFC_GUILD;
 
 const getChannel = (client, channelName) => {
@@ -38,15 +38,15 @@ const crons = client => {
    * FROM: 8 days ago
    * TO: Today at 00:00;
    */
-  const weekleyResult = schedule.scheduleJob('0 6 * * 1', async () => {
+  const weekleyResult = schedule.scheduleJob("0 6 * * 1", async () => {
     let to = flatDate();
-    let from = subDays(to, 8);
+    let from = sub(to, { days: 8 });
     let counts;
 
     try {
       counts = await g.getActivityCountsInRange(from, to);
     } catch (error) {
-      console.log('Failed to get weekley results');
+      console.log("Failed to get weekley results");
       console.log(error);
       return;
     }
@@ -63,11 +63,9 @@ const crons = client => {
     });
     data.sort((a, b) => b[2] - a[2]);
 
-
     let messages = _chunk(data, 10).map((chunk, index) => {
-
       if (index === 0) {
-        chunk.unshift(['Member', 'Logged', 'Days', 'Year']);
+        chunk.unshift(["Member", "Logged", "Days", "Year"]);
       }
 
       let output = table(chunk, {
@@ -75,15 +73,15 @@ const crons = client => {
           0: { truncate: 15, width: 15 },
           1: { width: 6 },
           2: { width: 4 },
-          3: { width: 4 },
+          3: { width: 4 }
         }
       });
 
-      let message = '```' + output.toString() + '```';
+      let message = "```" + output.toString() + "```";
 
       if (index === 0) {
-        message =  `Rise and shine, Tranquili-nerds! I've prepared your summary for:
-**The Week of ${formatDate(addDays(from, 1), 'MMM Do')}**
+        message = `Rise and shine, Tranquili-nerds! I've prepared your summary for:
+**The Week of ${formatDate(add(from, { days: 1 }), "MMM do")}**
 Take a look and make sure every workout you've done is accounted for.
 If something seems off, be sure to get in touch with an admin.
 We wouldn't want any of your hard work slipping through the cracks!
@@ -96,12 +94,12 @@ ${message}`;
       return message;
     });
 
-    let channel = getChannel(client, 'home');
+    let channel = getChannel(client, "home");
     messages.forEach(message => {
       channel.send(message);
-    })
+    });
   });
-  
+
   /**
    * First day of every month
    * I'm looking for workouts between (exclusive)

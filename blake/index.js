@@ -10,7 +10,7 @@ let commandMatcher;
 
 client.on("ready", () => {
   console.log(client.user.username, "is up and running.");
-  commandMatcher = new RegExp(`^<@!${client.user.id}>\\s+([a-z]+)`);
+  commandMatcher = new RegExp(`^<@!?${client.user.id}>\\s+([a-z]+)`);
   crons(client);
 });
 
@@ -33,8 +33,12 @@ async function handleMessage(message) {
 
   if (author.bot) return;
 
+  console.log("CONTENT", content);
+
   if (message.isMentioned(client.user)) {
     let command = (commandMatcher.exec(content) || [])[1];
+
+    console.log("COMMAND", command);
 
     switch (command) {
       case "help":

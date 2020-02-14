@@ -14,6 +14,7 @@ const handleTimeZone = async message => {
 
       let userData = await getUserData(author);
       userData.timeZone = timeZone;
+      console.log("USER DATA", userData);
 
       await setUserData(author, userData);
       channel.send(`I've set your time zone to ${timeZone}, ${member}!`);
@@ -25,6 +26,8 @@ const handleTimeZone = async message => {
   }
 
   let userData = await getUserData(author);
+  console.log("USER DATA", userData);
+
   channel.send(
     `Your time zone is currently set to ${userData.timeZone}, ${member}!`
   );

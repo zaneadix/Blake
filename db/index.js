@@ -1,6 +1,9 @@
 let redis = require("redis");
-let dbClient = redis.createClient();
-const { promisify } = require("util");
+let { promisify } = require("util");
+
+let dbClient = redis.createClient({
+  url: process.env.REDIS_URL
+});
 
 class UserData {
   constructor(user, timeZone) {

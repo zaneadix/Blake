@@ -1,6 +1,7 @@
 const _uniq = require("lodash/uniq");
 const formatDate = require("date-fns/format");
 const dayIsAfter = require("date-fns/isAfter");
+const { utcToZonedTime } = require("date-fns-tz");
 const differenceInDays = require("date-fns/differenceInDays");
 
 const client = require("./client");
@@ -167,6 +168,7 @@ const logResponse = async (message, feedback, success = false) => {
 
 const logWorkout = async message => {
   let { attachments, author, channel, content, member, mentions } = message;
+
   let {
     date,
     day,
@@ -178,7 +180,7 @@ const logWorkout = async message => {
     partners
   } = getLogValues(content);
 
-  let userData = getUserData(author);
+  let userData = await getUserData(author);
   member = new Member(member);
 
   if (MINUTE.test(timeUnit)) {
@@ -226,7 +228,8 @@ const logWorkout = async message => {
     }
 
     date = new Date(year, month - 1, day);
-    if (dayIsAfter(date, flatDate())) {
+    flat = flatDate(utcToZonedTime(new Date(), userData.timeZone));
+    if (dayIsAfter(date, flat)) {
       logResponse(
         message,
         `Date alert, ${member}! The date you entered is in the future. Quit horsin' around!`
@@ -234,7 +237,7 @@ const logWorkout = async message => {
       return;
     }
 
-    if (differenceInDays(flatDate(), date) > SUBMISSION_WINDOW) {
+    if (differenceInDays(flat, date) > SUBMISSION_WINDOW) {
       logResponse(
         message,
         `Date alert, ${member}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`
@@ -243,9 +246,7 @@ const logWorkout = async message => {
     }
   }
 
-  date = date || flatDate(); //default date is today
-
-  console.log("DATE", adjustedNow(userData.timeZone));
+  date = date || utcToZonedTime(new Date(), userData.timeZone); //default date is today
 
   //Get all members
   let members = [member];
@@ -272,7 +273,7 @@ const logWorkout = async message => {
       workout,
       duration: `${duration} ${timeUnit}`,
       date,
-      logTime: formatDate(new Date(), "M-d-yy h:mm:ssa"), // may need current timezone?
+      logTime: formatDate(date, "M-d-yy h:mm:ssa"), // may need current timezone?
       imageURL: image && image.url
     });
   } catch (error) {

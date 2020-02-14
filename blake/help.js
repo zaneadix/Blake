@@ -176,6 +176,44 @@ let commands = {
         ].join("\n")
       }
     ]
+  },
+  timezone: {
+    icon: "🕑",
+    name: "Time Zone",
+    summary: "get or set your time zone",
+    format: `timezone [location]`,
+    detail: [
+      "The timezone command let's you set and retrieve your current timezone.",
+      "-----"
+    ].join("\n"),
+    fields: [
+      {
+        name: "**Default Behavior**",
+        value: [
+          "If you _don't_ specify a timezone, I'll just return your current time zone setting. By default, your time zone is America/New_York (Eastern Standard)",
+          "-----"
+        ].join("\n")
+      },
+      {
+        name: "**Location**",
+        value: [
+          "If you _do_ specify an location, your time zone will be set to whatever time zone that location falls within.",
+          "-----"
+        ].join("\n")
+      },
+      {
+        name: "**Example Commands**",
+        value: [
+          "```",
+          "timezone",
+          "",
+          "timezone london",
+          "",
+          "timezone 123 banana st richmond va",
+          "```"
+        ].join("\n")
+      }
+    ]
   }
 };
 

@@ -1,9 +1,9 @@
 const g = require("../google");
-const { dbClient, getUserData, setUserData } = require("../db");
+const { getUserData, setUserData } = require("../db");
 
 let timeZoneMatch = /(timezone|tz)\s*([a-z,\- ]+)?/i;
 
-const handleTimeZone = async message => {
+const handleTimeZone = async (message) => {
   let { author, channel, content, member } = message;
 
   let address = timeZoneMatch.exec(content)[2];
@@ -14,7 +14,6 @@ const handleTimeZone = async message => {
 
       let userData = await getUserData(author);
       userData.timeZone = timeZone;
-      console.log("USER DATA", userData);
 
       await setUserData(author, userData);
       channel.send(`I've set your time zone to ${timeZone}, ${member}!`);
@@ -26,7 +25,6 @@ const handleTimeZone = async message => {
   }
 
   let userData = await getUserData(author);
-  console.log("USER DATA", userData);
 
   channel.send(
     `Your time zone is currently set to ${userData.timeZone}, ${member}!`
@@ -34,5 +32,5 @@ const handleTimeZone = async message => {
 };
 
 module.exports = {
-  handleTimeZone
+  handleTimeZone,
 };

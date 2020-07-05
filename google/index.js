@@ -5,7 +5,7 @@ const formatDate = require("date-fns/format");
 const sub = require("date-fns/sub");
 const isAfter = require("date-fns/isAfter");
 const isBefore = require("date-fns/isBefore");
-const calendarMonthsDiff = require("date-fns/differenceInMonths");
+const getMonth = require("date-fns/getMonth");
 
 const { flatDate, LOG_COLUMNS, TALLY_COLUMNS } = require("../utils");
 const getWorkoutLog = require("./getWorkoutLog");
@@ -21,7 +21,7 @@ const jwtClient = new google.auth.JWT(
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive.metadata",
-    "https://www.googleapis.com/auth/spreadsheets"
+    "https://www.googleapis.com/auth/spreadsheets",
   ]
 );
 
@@ -32,18 +32,18 @@ let g = {
   sheets: google.sheets({ version: "v4" }),
   geocode: maps.geocode,
   timezone: maps.timezone,
-  cache: {}
+  cache: {},
 };
 
 const initializeClients = async () => {
-  let auth = await new Promise(resolve => {
+  let auth = await new Promise((resolve) => {
     jwtClient
       .authorize()
       .then(() => {
         console.log("Google APIs authorized");
         resolve(jwtClient);
       })
-      .catch(shit => console.log(shit));
+      .catch((shit) => console.log(shit));
   });
   g.drive = google.drive({ version: "v3", auth });
   g.sheets = google.sheets({ version: "v4", auth });
@@ -61,7 +61,7 @@ const fetchData = async (workoutLog, months) => {
       .batchGet({
         spreadsheetId: workoutLog.id,
         ranges: ["Tally", ...months],
-        majorDimension: "ROWS"
+        majorDimension: "ROWS",
       })
       .then(({ data }) => {
         result = data.valueRanges;
@@ -74,7 +74,7 @@ const fetchData = async (workoutLog, months) => {
   return result;
 };
 
-const getDataFrom = async fromDate => {
+const getDataFrom = async (fromDate) => {
   let date = flatDate();
   let year = date.getFullYear();
   let workoutLog;
@@ -85,9 +85,9 @@ const getDataFrom = async fromDate => {
     throw error;
   }
 
-  let diff = calendarMonthsDiff(date, fromDate);
+  let monthDiff = getMonth(date) - getMonth(fromDate);
   let monthNames = [formatDate(date, "MMM")];
-  for (let i = 0; i < diff; i++) {
+  for (let i = 0; i < monthDiff; i++) {
     date = sub(date, { months: 1 });
     monthNames.push(formatDate(date, "MMM"));
   }
@@ -103,7 +103,7 @@ const getDataFrom = async fromDate => {
 
   return {
     months,
-    tally
+    tally,
   };
 };
 
@@ -112,7 +112,7 @@ const filterLogs = (months, fromDate, toDate, onMatch) => {
   let dateMap = {};
   months.forEach(({ values }) => {
     values.shift();
-    values.forEach(row => {
+    values.forEach((row) => {
       let dateValue = `${row[LOG_COLUMNS.DATE]} ${year}`; //date key
       dateMap[dateValue] = dateMap[dateValue] || flatDate(new Date(dateValue));
 
@@ -137,14 +137,14 @@ const getLogsInRange = async (memberId, fromDate, toDate) => {
   let { months } = data;
   let logs = [];
 
-  filterLogs(months, fromDate, toDate, row => {
+  filterLogs(months, fromDate, toDate, (row) => {
     if (row[LOG_COLUMNS.ID] === memberId) {
       logs.push({
         activity: row[LOG_COLUMNS.EXERCISE],
         duration: row[LOG_COLUMNS.DURATION],
         date: row[LOG_COLUMNS.DATE],
         picture: row[LOG_COLUMNS.PICTURE],
-        firstOfDay: row[LOG_COLUMNS.FIRST_OF_DAY]
+        firstOfDay: row[LOG_COLUMNS.FIRST_OF_DAY],
       });
     }
   });
@@ -160,6 +160,7 @@ const getLogsInRange = async (memberId, fromDate, toDate) => {
  * - Total workouts for the year
  */
 const getActivityCountsInRange = async (fromDate, toDate) => {
+  console.log(fromDate, toDate);
   let data;
   try {
     data = await getDataFrom(fromDate);
@@ -172,18 +173,18 @@ const getActivityCountsInRange = async (fromDate, toDate) => {
   let memberMap = {};
 
   tally.values.shift();
-  tally.values.map(row => {
+  tally.values.map((row) => {
     let id = row[LOG_COLUMNS.ID];
     let username = row[LOG_COLUMNS.MEMBER];
     memberMap[id] = memberMap[id] || {
       username,
       workoutsLogged: 0,
       daysWorkedOut: 0,
-      yearTotal: parseInt(row[TALLY_COLUMNS.TOTAL])
+      yearTotal: parseInt(row[TALLY_COLUMNS.TOTAL]),
     };
   });
 
-  filterLogs(months, fromDate, toDate, row => {
+  filterLogs(months, fromDate, toDate, (row) => {
     let id = row[LOG_COLUMNS.ID];
     memberMap[id].workoutsLogged++;
     // use most recent username?
@@ -200,7 +201,7 @@ const tallyWorkout = async ({
   duration,
   date,
   logTime,
-  imageURL
+  imageURL,
 }) => {
   let year = formatDate(date, "yyyy");
   let month = formatDate(date, "MMM");
@@ -249,13 +250,13 @@ const tallyWorkout = async ({
   }
 };
 
-const getTimeZone = async address => {
+const getTimeZone = async (address) => {
   let geometry;
   let timeZone;
 
   try {
     let response = await g.geocode({
-      params: { address, key: process.env.GOOGLE_MAPS_API_KEY }
+      params: { address, key: process.env.GOOGLE_MAPS_API_KEY },
     });
     geometry = response.data.results[0].geometry;
     console.log("GEOMETRY", geometry);
@@ -269,8 +270,8 @@ const getTimeZone = async address => {
       params: {
         location: `${geometry.location.lat}, ${geometry.location.lng}`,
         timestamp: Math.floor(Date.now() / 1000), // timestamp in seconds
-        key: process.env.GOOGLE_MAPS_API_KEY
-      }
+        key: process.env.GOOGLE_MAPS_API_KEY,
+      },
     });
     timeZone = response.data.timeZoneId;
     console.log("TIME ZONE", timeZone);
@@ -286,5 +287,5 @@ module.exports = {
   getLogsInRange,
   getActivityCountsInRange,
   tallyWorkout,
-  getTimeZone
+  getTimeZone,
 };

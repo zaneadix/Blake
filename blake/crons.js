@@ -13,7 +13,7 @@ const getChannel = (client, channelName) => {
   let guild = client.guilds.get(GUILD_ID);
   let channel;
   if (guild) {
-    channel = guild.channels.find(channel => channel.name === channelName);
+    channel = guild.channels.find((channel) => channel.name === channelName);
   }
   return channel;
 };
@@ -30,15 +30,16 @@ const getChannel = (client, channelName) => {
   └───────────────────────── second (0 - 59, OPTIONAL)
  */
 
-const crons = client => {
+const crons = (client) => {
   /**
    * Every Monday at 8am
    * I'm looking for workouts between (exclusive)
    * last Sunday and today (Monday)...
    * FROM: 8 days ago
    * TO: Today at 00:00;
+   * "0 6 * * 1"
    */
-  const weekleyResult = schedule.scheduleJob("0 6 * * 1", async () => {
+  const weekleyResult = schedule.scheduleJob("*/10 * * * * *", async () => {
     let to = flatDate();
     let from = sub(to, { days: 8 });
     let counts;
@@ -52,13 +53,13 @@ const crons = client => {
     }
 
     let data = [];
-    Object.keys(counts).forEach(id => {
+    Object.keys(counts).forEach((id) => {
       let row = counts[id];
       data.push([
         row.username,
         row.workoutsLogged,
         row.daysWorkedOut,
-        row.yearTotal
+        row.yearTotal,
       ]);
     });
     data.sort((a, b) => b[2] - a[2]);
@@ -73,8 +74,8 @@ const crons = client => {
           0: { truncate: 15, width: 15 },
           1: { width: 6 },
           2: { width: 4 },
-          3: { width: 4 }
-        }
+          3: { width: 4 },
+        },
       });
 
       let message = "```" + output.toString() + "```";
@@ -95,7 +96,7 @@ ${message}`;
     });
 
     let channel = getChannel(client, "home");
-    messages.forEach(message => {
+    messages.forEach((message) => {
       channel.send(message);
     });
   });

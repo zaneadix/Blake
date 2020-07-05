@@ -39,7 +39,7 @@ const crons = (client) => {
    * TO: Today at 00:00;
    * "0 6 * * 1"
    */
-  const weekleyResult = schedule.scheduleJob("*/10 * * * * *", async () => {
+  const weekleyResult = schedule.scheduleJob("0 6 * * 1", async () => {
     let to = flatDate();
     let from = sub(to, { days: 8 });
     let counts;

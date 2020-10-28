@@ -10,11 +10,10 @@ const g = require("../google");
 const {
   adjustedNow,
   flatDate,
-  Member,
   MATCHERS,
   REACTIONS,
   SUBMISSION_WINDOW,
-  TIME_UNITS
+  TIME_UNITS,
 } = require("../utils");
 
 const failMessageCache = {};
@@ -33,7 +32,7 @@ const LOG = new RegExp(
 const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, "ig");
 const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)/i;
 
-const isLogMessage = message => {
+const isLogMessage = (message) => {
   let possibility = LOG.test(message.content);
   let isLog = false;
   if (!possibility) {
@@ -63,10 +62,10 @@ Ran in circles for 12 hrs on 1/1 with @mom, @sister and @dad
 Gym (wights/cardio) for 1.5 hours
 \`\`\``
         )
-        .then(response => {
+        .then((response) => {
           cacheResponse(message, response);
         })
-        .catch(error => console.log(error));
+        .catch((error) => console.log(error));
       return;
     case "yes":
     default:
@@ -76,11 +75,11 @@ Gym (wights/cardio) for 1.5 hours
   return isLog;
 };
 
-const getLogValues = log => {
+const getLogValues = (log) => {
   let cutoff = log.length;
   let values = {
     year: new Date().getFullYear(),
-    partners: []
+    partnerIds: [],
   };
   let option;
 
@@ -93,11 +92,11 @@ const getLogValues = log => {
           date: option[2],
           month: option[3],
           day: option[4],
-          year: option[6] ? `20${option[6]}` : values.year
+          year: option[6] ? `20${option[6]}` : values.year,
         });
         break;
       case "with":
-        values.partners = option[0].match(/\d+/g) || [];
+        values.partnerIds = option[0].match(/\d+/g) || [];
     }
   }
 
@@ -118,7 +117,7 @@ const getLogValues = log => {
   return Object.assign(values, {
     duration,
     timeUnit,
-    workout
+    workout,
   });
 };
 
@@ -127,10 +126,10 @@ const cacheResponse = (message, response) => {
   failMessageCache[message.id][response.id] = response;
 };
 
-const clearResponses = message => {
+const clearResponses = (message) => {
   let responses = failMessageCache[message.id];
   if (responses) {
-    Object.keys(responses).forEach(async responseId => {
+    Object.keys(responses).forEach(async (responseId) => {
       let response = responses[responseId];
       await response.delete();
       delete responses[responseId];
@@ -152,23 +151,22 @@ const logResponse = async (message, feedback, success = false) => {
         clearResponses(message);
       }
     })
-    .catch(error => console.log(error));
+    .catch((error) => console.log(error));
 
   if (feedback) {
     message.channel
       .send(feedback)
-      .then(response => {
+      .then((response) => {
         if (!success) {
           cacheResponse(message, response);
         }
       })
-      .catch(error => console.log(error));
+      .catch((error) => console.log(error));
   }
 };
 
-const logWorkout = async message => {
-  let { attachments, author, channel, content, member, mentions } = message;
-
+const logWorkout = async (message) => {
+  let { attachments, author, channel, content, mentions } = message;
   let {
     date,
     day,
@@ -177,11 +175,10 @@ const logWorkout = async message => {
     duration,
     timeUnit,
     workout,
-    partners
+    partnerIds,
   } = getLogValues(content);
 
   let userData = await getUserData(author);
-  member = new Member(member);
 
   if (MINUTE.test(timeUnit)) {
     timeUnit = "minute";
@@ -190,7 +187,7 @@ const logWorkout = async message => {
   } else {
     logResponse(
       message,
-      `Sorry, ${member}! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
+      `Sorry, ${author}! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
         ", "
       )}*`
     );
@@ -202,7 +199,7 @@ const logWorkout = async message => {
     if (!(month >= 1 && month <= 12)) {
       logResponse(
         message,
-        `Quit goofin' off, ${member}! Month should be a number from 1 to 12. You entered *${month}*.`
+        `Quit goofin' off, ${author}! Month should be a number from 1 to 12. You entered *${month}*.`
       );
       return;
     }
@@ -210,7 +207,7 @@ const logWorkout = async message => {
     if (!/\d{4}/.test(year)) {
       logResponse(
         message,
-        `Quit goofin' off, ${member}! It's definitely not the year ${year}.`
+        `Quit goofin' off, ${author}! It's definitely not the year ${year}.`
       );
       return;
     }
@@ -222,7 +219,7 @@ const logWorkout = async message => {
     if (!(day >= 1 && day <= dayCount)) {
       logResponse(
         message,
-        `Quit being silly, ${member}! Day should be a number between 1 and ${dayCount} for the month you gave. You entered *${day}*.`
+        `Quit being silly, ${author}! Day should be a number between 1 and ${dayCount} for the month you gave. You entered *${day}*.`
       );
       return;
     }
@@ -232,7 +229,7 @@ const logWorkout = async message => {
     if (dayIsAfter(date, flat)) {
       logResponse(
         message,
-        `Date alert, ${member}! The date you entered is in the future. Quit horsin' around!`
+        `Date alert, ${author}! The date you entered is in the future. Quit horsin' around!`
       );
       return;
     }
@@ -240,7 +237,7 @@ const logWorkout = async message => {
     if (differenceInDays(flat, date) > SUBMISSION_WINDOW) {
       logResponse(
         message,
-        `Date alert, ${member}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`
+        `Date alert, ${author}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`
       );
       return;
     }
@@ -248,15 +245,15 @@ const logWorkout = async message => {
 
   date = date || utcToZonedTime(new Date(), userData.timeZone); //default date is today
 
-  //Get all members
-  let members = [member];
-  partners.forEach(partnerId => {
-    let partner = mentions.members.find(user => user.id === partnerId);
+  //Get all users
+  let users = [author];
+  partnerIds.forEach((partnerId) => {
+    let partner = mentions.users.find((user) => user.id === partnerId);
     if (partner && !partner.user.bot) {
-      members.push(new Member(partner));
+      users.push(partner);
     }
   });
-  members = _uniq(members);
+  users = _uniq(users);
 
   let image;
   if (attachments.size) {
@@ -269,36 +266,36 @@ const logWorkout = async message => {
 
   try {
     await g.tallyWorkout({
-      members,
+      users,
       workout,
       duration: `${duration} ${timeUnit}`,
       date,
       logTime: formatDate(date, "M-d-yy h:mm:ssa"), // may need current timezone?
-      imageURL: image && image.url
+      imageURL: image && image.url,
     });
   } catch (error) {
     logResponse(
       message,
-      `Oh crap, ${member}! I tried to log your workout but got this error. **${error.message}**.`
+      `Oh crap, ${author}! I tried to log your workout but got this error. **${error.message}**.`
     );
     return;
   }
 
   logResponse(message, null, true);
 
-  if (members.length > 1) {
-    let logger = members.shift();
-    members = members.map(member => member.toString());
-    let eachOf = members.length > 1 ? "each of " : "";
-    let end = members.splice(-2).join(" and ");
-    let mentions = [...members, end].join(", ");
+  if (users.length > 1) {
+    let logger = users.shift();
+    users = users.map((user) => user.toString());
+    let eachOf = users.length > 1 ? "each of " : "";
+    let end = users.splice(-2).join(" and ");
+    let mentions = [...users, end].join(", ");
 
     channel
       .send(
         `Hey! ${mentions}! I've logged activty for ${eachOf}you on behalf of ${logger}. Team work!`
       )
       .then(() => {})
-      .catch(error => console.log(error));
+      .catch((error) => console.log(error));
   }
 
   return;
@@ -306,5 +303,5 @@ const logWorkout = async message => {
 
 module.exports = {
   isLogMessage,
-  logWorkout
+  logWorkout,
 };

@@ -13,8 +13,8 @@ class ManualPage {
       title: "",
       description: "",
       footer: {
-        text: `I've got your back 👍`
-      }
+        text: `I've got your back 👍`,
+      },
     };
     Object.assign(this.embed, params);
   }
@@ -25,7 +25,7 @@ let commands = {
     icon: "📈",
     name: "Activity",
     summary: "get a direct message summary of a users activity",
-    format: `activity [of {member}] [from {date}] [to {date}]`,
+    format: `activity [of {user}] [from {date}] [to {date}]`,
     detail: ["get a direct message summary of a users activity.", "-----"].join(
       "\n"
     ),
@@ -33,17 +33,17 @@ let commands = {
       {
         name: "**Default Behavior**",
         value: [
-          "If you _don't_ specify a _member_, _from_ or _to_ date, you will get a summary of _your_ the last _10 days_.",
-          "-----"
-        ].join("\n")
+          "If you _don't_ specify a _user_, _from_ or _to_ date, you will get a summary of _your_ the last _10 days_.",
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**Of** _optional_",
         value: [
-          "the member you would like a summary of",
+          "the user you would like a summary of",
           "_Format_ : `@tommy`",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**From / To** _optional_",
@@ -51,8 +51,8 @@ let commands = {
           "the _start_ and _end_ date of the summary range",
           "_Format_ : `MM/DD`",
           "_Example_ : `from 2/22`",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**Example Commands**",
@@ -65,10 +65,10 @@ let commands = {
           "activity from 1/20 to 2/10",
           "",
           "activity of @tommy from 1/15",
-          "```"
-        ].join("\n")
-      }
-    ]
+          "```",
+        ].join("\n"),
+      },
+    ],
   },
   help: {
     icon: "❓",
@@ -77,28 +77,28 @@ let commands = {
     format: `help [command]`,
     detail: [
       "The help command gives guidance on how to work with me.",
-      "-----"
+      "-----",
     ].join("\n"),
     fields: [
       {
         name: "**Default Behavior**",
         value: [
           "If you _don't_ specify a command, you will get commands page of the manual. This manual.",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**Command**",
         value: [
           "If you _do_ specify a command, you'll get specifc guidelines for that command.",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**Example Commands**",
-        value: ["```", "help", "", "help log", "```"].join("\n")
-      }
-    ]
+        value: ["```", "help", "", "help log", "```"].join("\n"),
+      },
+    ],
   },
   log: {
     icon: "📋",
@@ -108,15 +108,15 @@ let commands = {
     detail: [
       "The log command allows you to log activity.",
       "Log commands _MUST_ be submitted in the logging channel",
-      "-----"
+      "-----",
     ].join("\n"),
     fields: [
       {
         name: "**Command Format**",
         value: [
           "`log {duration} of {activity} [on {date}] [with {partners}]`",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**Duration**",
@@ -126,8 +126,8 @@ let commands = {
           "_Example_ : `10 minutes`",
           "\xa0\xa0\xa0- Number can contain decimals",
           "\xa0\xa0\xa0- Acceptable time units are `min`, `mins`, `minutes`, `hr`, `hrs`, `hour`, `hours`",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**Activity**",
@@ -137,8 +137,8 @@ let commands = {
           "_Can contain_ :",
           "\xa0\xa0\xa0- Alphabetical characters",
           "\xa0\xa0\xa0- The special characters: ( )  / _ -",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: `**Date** _\*optional\*_`,
@@ -146,16 +146,16 @@ let commands = {
           "The date the activity was completed. If you don't provide a date, your activity will be logged on todays date.",
           "_Format_ : `MM/DD[/YY]`",
           "_Example_ : `2/22`",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: `**Partners** _\*optional\*_`,
         value: [
           "If you worked out with others you can mention them here to log the same workout for everyone. These can be comma separated or speced with the word 'and' in case you want to write like a human.",
           "_Format_ : `@steve @britney @rashida`",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**Example Commands**",
@@ -172,10 +172,10 @@ let commands = {
           "12 hrs of running in circles on 1/1 with @mom, @sister and @dad",
           "",
           "1.5 hours of gym (wights/cardio)",
-          "```"
-        ].join("\n")
-      }
-    ]
+          "```",
+        ].join("\n"),
+      },
+    ],
   },
   timezone: {
     icon: "🕑",
@@ -184,22 +184,22 @@ let commands = {
     format: `timezone [location]`,
     detail: [
       "The timezone command let's you set and retrieve your current timezone.",
-      "-----"
+      "-----",
     ].join("\n"),
     fields: [
       {
         name: "**Default Behavior**",
         value: [
           "If you _don't_ specify a timezone, I'll just return your current time zone setting. By default, your time zone is America/New_York (Eastern Standard)",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**Location**",
         value: [
           "If you _do_ specify an location, your time zone will be set to whatever time zone that location falls within.",
-          "-----"
-        ].join("\n")
+          "-----",
+        ].join("\n"),
       },
       {
         name: "**Example Commands**",
@@ -210,11 +210,11 @@ let commands = {
           "timezone london",
           "",
           "timezone 123 banana st richmond va",
-          "```"
-        ].join("\n")
-      }
-    ]
-  }
+          "```",
+        ].join("\n"),
+      },
+    ],
+  },
 };
 
 let buttons = ["📕"];
@@ -224,12 +224,12 @@ Object.keys(commands).forEach((key, index, array) => {
   let command = commands[key];
   fields.push({
     name: `${command.icon} **${command.name}** - _${command.summary}_`,
-    value: `\`${command.format}\`${index < array.length - 1 ? "\n----" : ""}`
+    value: `\`${command.format}\`${index < array.length - 1 ? "\n----" : ""}`,
   });
   buttons.push(command.icon);
 });
 
-const handleHelpRequest = async mr => {
+const handleHelpRequest = async (mr) => {
   let command;
   let channel;
   let response;
@@ -240,12 +240,12 @@ const handleHelpRequest = async mr => {
     command = commands[commandName];
   } else if (mr instanceof Discord.MessageReaction) {
     channel = mr.message.channel;
-    command = _find(commands, command => command.icon === mr.emoji.name);
+    command = _find(commands, (command) => command.icon === mr.emoji.name);
   }
 
   helpMenus[channel.id] = helpMenus[channel.id] || {
     message: undefined,
-    timeoutID: undefined
+    timeoutID: undefined,
   };
   let menu = helpMenus[channel.id];
 
@@ -253,7 +253,7 @@ const handleHelpRequest = async mr => {
     response = new ManualPage({
       title: `${command.icon} **${command.name}**`,
       description: command.detail,
-      fields: command.fields
+      fields: command.fields,
     });
   } else {
     response = new ManualPage({
@@ -271,9 +271,9 @@ const handleHelpRequest = async mr => {
         "```",
         `@${client.user.username} log 20 minutes of running`,
         "```",
-        "**Commands**"
+        "**Commands**",
       ].join("\n"),
-      fields
+      fields,
     });
   }
   let shouldInit = !menu.message;
@@ -297,7 +297,7 @@ const handleHelpRequest = async mr => {
       await menu.message.edit(
         new ManualPage({
           thumbnail: {},
-          description: `This help menu has expired. Hit me up for help anytime using \`@${client.user.username} help\``
+          description: `This help menu has expired. Hit me up for help anytime using \`@${client.user.username} help\``,
         })
       );
       delete helpMenus[channel.id];
@@ -308,7 +308,7 @@ const handleHelpRequest = async mr => {
 
   if (shouldInit) {
     try {
-      buttons.forEach(async button => {
+      buttons.forEach(async (button) => {
         await menu.message.react(button);
       });
     } catch (error) {
@@ -334,5 +334,5 @@ const updateHelpMenu = (reaction, user) => {
 
 module.exports = {
   updateHelpMenu,
-  provideHelp: message => handleHelpRequest(message)
+  provideHelp: (message) => handleHelpRequest(message),
 };

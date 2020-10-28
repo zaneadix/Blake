@@ -4,7 +4,7 @@ const { getUserData, setUserData } = require("../db");
 let timeZoneMatch = /(timezone|tz)\s*([a-z,\- ]+)?/i;
 
 const handleTimeZone = async (message) => {
-  let { author, channel, content, member } = message;
+  let { author, channel, content } = message;
 
   let address = timeZoneMatch.exec(content)[2];
 
@@ -16,10 +16,10 @@ const handleTimeZone = async (message) => {
       userData.timeZone = timeZone;
 
       await setUserData(author, userData);
-      channel.send(`I've set your time zone to ${timeZone}, ${member}!`);
+      channel.send(`I've set your time zone to ${timeZone}, ${author}!`);
     } catch (error) {
       console.log(error);
-      channel.send(`Sorry, ${member}, I dropped the ball. ${error.message}`);
+      channel.send(`Sorry, ${author}, I dropped the ball. ${error.message}`);
     }
     return;
   }
@@ -27,7 +27,7 @@ const handleTimeZone = async (message) => {
   let userData = await getUserData(author);
 
   channel.send(
-    `Your time zone is currently set to ${userData.timeZone}, ${member}!`
+    `Your time zone is currently set to ${userData.timeZone}, ${author}!`
   );
 };
 

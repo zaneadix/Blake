@@ -1,26 +1,7 @@
-class Member {
-  constructor(member) {
-    this.member = member;
-    this.user = member.user;
-
-    this.id = member.user.id;
-    this.nickname = member.nickname;
-    this.username = member.user.username;
-  }
-
-  getName() {
-    return this.nickname || this.username;
-  }
-
-  toString() {
-    return this.member.user.toString();
-  }
-}
-
 class StringValue {
   constructor(stringValue = "") {
     this.userEnteredValue = {
-      stringValue
+      stringValue,
     };
   }
 }
@@ -28,7 +9,7 @@ class StringValue {
 class NumberValue {
   constructor(numberValue = 0) {
     this.userEnteredValue = {
-      numberValue
+      numberValue,
     };
   }
 }
@@ -36,7 +17,7 @@ class NumberValue {
 class BooleanValue {
   constructor(boolValue = true) {
     this.userEnteredValue = {
-      boolValue
+      boolValue,
     };
   }
 }
@@ -44,15 +25,14 @@ class BooleanValue {
 class FormulaValue {
   constructor(formulaValue = "") {
     this.userEnteredValue = {
-      formulaValue
+      formulaValue,
     };
   }
 }
 
 module.exports = {
-  Member,
   BooleanValue,
   FormulaValue,
   NumberValue,
-  StringValue
+  StringValue,
 };

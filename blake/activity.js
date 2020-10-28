@@ -13,12 +13,12 @@ const ACTIVITY = new RegExp(
   `activity(${OF.source})?((${FROM.source})?(${TO.source})?)?`
 );
 
-const getActivityValues = message => {
+const getActivityValues = (message) => {
   let [
     ,
     ,
     ,
-    memberId,
+    userId,
     ,
     ,
     from,
@@ -29,13 +29,13 @@ const getActivityValues = message => {
     ,
     to,
     tMonth,
-    tDay
+    tDay,
   ] = ACTIVITY.exec(message.content);
 
-  console.log(memberId);
+  console.log(userId);
 
-  let member =
-    message.mentions.users.find(user => user.id === memberId) || message.author;
+  let user =
+    message.mentions.users.find((user) => user.id === userId) || message.author;
   let year = new Date().getFullYear();
   let toDate = to ? new Date(year, tMonth - 1, tDay) : flatDate();
   toDate = add(toDate, { days: 1 });
@@ -45,38 +45,38 @@ const getActivityValues = message => {
   fromDate = sub(fromDate, { days: 1 });
 
   return {
-    member,
+    user,
     year,
     fromDate,
-    toDate
+    toDate,
   };
 };
 
-const getActivity = async message => {
-  let { member, year, fromDate, toDate } = getActivityValues(message);
+const getActivity = async (message) => {
+  let { user, year, fromDate, toDate } = getActivityValues(message);
   let fromPrint = formatDate(add(fromDate, { days: 1 }), "MMM do");
   let toPrint = formatDate(toDate, "MMM do");
 
   let data;
   try {
-    data = await g.getLogsInRange(member.id, fromDate, toDate);
+    data = await g.getLogsInRange(user.id, fromDate, toDate);
   } catch (error) {
     console.log(error);
   }
 
   if (!data.length) {
     message.author.send(
-      `I wasn't able to find any logged activity for **${member}** within the range of **${fromPrint}** to **${toPrint}**`
+      `I wasn't able to find any logged activity for **${user}** within the range of **${fromPrint}** to **${toPrint}**`
     );
     return;
   }
 
-  data = data.map(log => {
+  data = data.map((log) => {
     return [
       log.activity,
       log.duration.replace(/ minutes?/, "m").replace(/ hours?/, "h"),
       formatDate(new Date(log.date).setFullYear(year), "M/d"),
-      log.firstOfDay
+      log.firstOfDay,
     ];
   });
 
@@ -86,7 +86,7 @@ const getActivity = async message => {
     "\xa0\xa0\xa0_Activity_ - The completed activity",
     "\xa0\xa0\xa0_Dur_(ation) - Time spent active",
     "\xa0\xa0\xa0_Date_ - Date active",
-    "\xa0\xa0\xa0_FOD_ - Is first activity of day (tallied)"
+    "\xa0\xa0\xa0_FOD_ - Is first activity of day (tallied)",
   ].join("\n");
 
   let tableChunks = [];
@@ -104,21 +104,21 @@ const getActivity = async message => {
       columns: {
         0: { truncate: 19, width: 19 },
         2: { truncate: 5, width: 5 },
-        3: { truncate: 3, width: 3 }
-      }
+        3: { truncate: 3, width: 3 },
+      },
     };
 
     if (i !== tableChunks.length - 1) {
       tableConfig.border = tableConfig.border || {};
       Object.assign(tableConfig.border, {
-        bottomBody: `-`
+        bottomBody: `-`,
       });
     }
 
     if (i !== 0) {
       tableConfig.border = tableConfig.border || {};
       Object.assign(tableConfig.border, {
-        topBody: `-`
+        topBody: `-`,
       });
     }
 

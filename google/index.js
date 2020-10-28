@@ -126,7 +126,7 @@ const filterLogs = (months, fromDate, toDate, onMatch) => {
   });
 };
 
-const getLogsInRange = async (memberId, fromDate, toDate) => {
+const getLogsInRange = async (userId, fromDate, toDate) => {
   let data;
   try {
     data = await getDataFrom(fromDate);
@@ -138,7 +138,7 @@ const getLogsInRange = async (memberId, fromDate, toDate) => {
   let logs = [];
 
   filterLogs(months, fromDate, toDate, (row) => {
-    if (row[LOG_COLUMNS.ID] === memberId) {
+    if (row[LOG_COLUMNS.ID] === userId) {
       logs.push({
         activity: row[LOG_COLUMNS.EXERCISE],
         duration: row[LOG_COLUMNS.DURATION],
@@ -170,13 +170,13 @@ const getActivityCountsInRange = async (fromDate, toDate) => {
 
   let { months, tally } = data;
 
-  let memberMap = {};
+  let userMap = {};
 
   tally.values.shift();
   tally.values.map((row) => {
     let id = row[LOG_COLUMNS.ID];
     let username = row[LOG_COLUMNS.MEMBER];
-    memberMap[id] = memberMap[id] || {
+    userMap[id] = userMap[id] || {
       username,
       workoutsLogged: 0,
       daysWorkedOut: 0,
@@ -186,17 +186,15 @@ const getActivityCountsInRange = async (fromDate, toDate) => {
 
   filterLogs(months, fromDate, toDate, (row) => {
     let id = row[LOG_COLUMNS.ID];
-    memberMap[id].workoutsLogged++;
-    // use most recent username?
-    // memberMap[id].username = memberMap[id].username || row[LOG_COLUMNS.MEMBER];
-    row[LOG_COLUMNS.FIRST_OF_DAY] === "yes" && memberMap[id].daysWorkedOut++;
+    userMap[id].workoutsLogged++;
+    row[LOG_COLUMNS.FIRST_OF_DAY] === "yes" && userMap[id].daysWorkedOut++;
   });
 
-  return memberMap;
+  return userMap;
 };
 
 const tallyWorkout = async ({
-  members,
+  users,
   workout,
   duration,
   date,
@@ -214,7 +212,7 @@ const tallyWorkout = async ({
   }
 
   // FOR TESTING
-  // member = members[Math.floor(Math.random() * members.length)];
+  // user = users[Math.floor(Math.random() * users.length)];
 
   // Fetch the current data set for tallies and logs
   let tallyData, logData;
@@ -235,7 +233,7 @@ const tallyWorkout = async ({
           tallyData.values,
           logData.values,
           month,
-          members,
+          users,
           workout,
           duration,
           date,

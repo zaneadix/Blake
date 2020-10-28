@@ -33,12 +33,10 @@ async function handleMessage(message) {
 
   if (author.bot) return;
 
-  console.log("CONTENT", content);
+  console.log("MESSAGE", author.username, "said", `"${content}"`);
 
   if (message.isMentioned(client.user)) {
     let command = (commandMatcher.exec(content) || [])[1];
-
-    console.log("COMMAND", command);
 
     switch (command) {
       case "help":

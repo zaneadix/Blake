@@ -249,7 +249,7 @@ const logWorkout = async (message) => {
   let users = [author];
   partnerIds.forEach((partnerId) => {
     let partner = mentions.users.find((user) => user.id === partnerId);
-    if (partner && !partner.user.bot) {
+    if (partner && !partner.bot) {
       users.push(partner);
     }
   });

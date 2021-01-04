@@ -1,20 +1,13 @@
-const _uniq = require("lodash/uniq");
-const formatDate = require("date-fns/format");
-const dayIsAfter = require("date-fns/isAfter");
-const { utcToZonedTime } = require("date-fns-tz");
-const differenceInDays = require("date-fns/differenceInDays");
+const _uniq = require('lodash/uniq');
+const formatDate = require('date-fns/format');
+const dayIsAfter = require('date-fns/isAfter');
+const { utcToZonedTime } = require('date-fns-tz');
+const differenceInDays = require('date-fns/differenceInDays');
 
-const client = require("./client");
-const { getUserData } = require("../db");
-const g = require("../google");
-const {
-  adjustedNow,
-  flatDate,
-  MATCHERS,
-  REACTIONS,
-  SUBMISSION_WINDOW,
-  TIME_UNITS,
-} = require("../utils");
+const client = require('./client');
+const { getUserData } = require('../db');
+const g = require('../google');
+const { adjustedNow, flatDate, MATCHERS, REACTIONS, SUBMISSION_WINDOW, TIME_UNITS } = require('../utils');
 
 const failMessageCache = {};
 // const logChannelName = 'log-your-workout';
@@ -27,23 +20,23 @@ const DATE = /\s+on\s+((\d+)\/(\d+)(\/(\d+))?)/i;
 const PARTNERS = /\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+/i;
 
 const LOG = new RegExp(
-  `^((${WORKOUT.source}\\s+for\\s+${TIME.source})|(<@!?\\d+>\\s+log\\s+${TIME.source}\\s+of\\s+${WORKOUT.source}))`
+  `^((${WORKOUT.source}\\s+for\\s+${TIME.source})|(<@!?\\d+>\\s+log\\s+${TIME.source}\\s+of\\s+${WORKOUT.source}))`,
 );
-const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, "ig");
+const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'ig');
 const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)/i;
 
-const isLogMessage = (message) => {
+const isLogMessage = message => {
   let possibility = LOG.test(message.content);
   let isLog = false;
   if (!possibility) {
-    possibility = POSSIBLE_LOG.test(message.content) ? "maybe" : "no";
+    possibility = POSSIBLE_LOG.test(message.content) ? 'maybe' : 'no';
   } else {
-    possibility = "yes";
+    possibility = 'yes';
     isLog = true;
   }
 
   switch (possibility) {
-    case "maybe":
+    case 'maybe':
       message
         .reply(
           `I think you might have just tried to submit a log.
@@ -60,14 +53,14 @@ Jumped up and down for 2 hours on 2/22
 Punched bricks for 10 minutes with @ShaunT @TonyH @myCat
 Ran in circles for 12 hrs on 1/1 with @mom, @sister and @dad
 Gym (wights/cardio) for 1.5 hours
-\`\`\``
+\`\`\``,
         )
-        .then((response) => {
+        .then(response => {
           cacheResponse(message, response);
         })
-        .catch((error) => console.log(error));
+        .catch(error => console.log(error));
       return;
-    case "yes":
+    case 'yes':
     default:
       break;
   }
@@ -75,7 +68,7 @@ Gym (wights/cardio) for 1.5 hours
   return isLog;
 };
 
-const getLogValues = (log) => {
+const getLogValues = log => {
   let cutoff = log.length;
   let values = {
     year: new Date().getFullYear(),
@@ -86,8 +79,8 @@ const getLogValues = (log) => {
   while ((option = LOG_OPTIONS.exec(log))) {
     let match = option[0].trim();
     cutoff = option.index < cutoff ? option.index : cutoff;
-    switch (match.split(" ")[0]) {
-      case "on":
+    switch (match.split(' ')[0]) {
+      case 'on':
         values = Object.assign(values, {
           date: option[2],
           month: option[3],
@@ -95,7 +88,7 @@ const getLogValues = (log) => {
           year: option[6] ? `20${option[6]}` : values.year,
         });
         break;
-      case "with":
+      case 'with':
         values.partnerIds = option[0].match(/\d+/g) || [];
     }
   }
@@ -104,11 +97,11 @@ const getLogValues = (log) => {
 
   let workout, duration, timeUnit;
   let req = LOG.exec(log);
-  if (log.includes(" for ")) {
+  if (log.includes(' for ')) {
     workout = req[3];
     duration = req[6];
     timeUnit = req[8];
-  } else if (log.includes(" of ")) {
+  } else if (log.includes(' of ')) {
     workout = req[14];
     duration = req[11];
     timeUnit = req[13];
@@ -126,10 +119,10 @@ const cacheResponse = (message, response) => {
   failMessageCache[message.id][response.id] = response;
 };
 
-const clearResponses = (message) => {
+const clearResponses = message => {
   let responses = failMessageCache[message.id];
   if (responses) {
-    Object.keys(responses).forEach(async (responseId) => {
+    Object.keys(responses).forEach(async responseId => {
       let response = responses[responseId];
       await response.delete();
       delete responses[responseId];
@@ -151,45 +144,36 @@ const logResponse = async (message, feedback, success = false) => {
         clearResponses(message);
       }
     })
-    .catch((error) => console.log(error));
+    .catch(error => console.log(error));
 
   if (feedback) {
     message.channel
       .send(feedback)
-      .then((response) => {
+      .then(response => {
         if (!success) {
           cacheResponse(message, response);
         }
       })
-      .catch((error) => console.log(error));
+      .catch(error => console.log(error));
   }
 };
 
-const logWorkout = async (message) => {
+const logWorkout = async message => {
   let { attachments, author, channel, content, mentions } = message;
-  let {
-    date,
-    day,
-    month,
-    year,
-    duration,
-    timeUnit,
-    workout,
-    partnerIds,
-  } = getLogValues(content);
+  let { date, day, month, year, duration, timeUnit, workout, partnerIds } = getLogValues(content);
 
   let userData = await getUserData(author);
 
   if (MINUTE.test(timeUnit)) {
-    timeUnit = "minute";
+    timeUnit = 'minute';
   } else if (HOUR.test(timeUnit)) {
-    timeUnit = "hour";
+    timeUnit = 'hour';
   } else {
     logResponse(
       message,
       `Sorry, ${author}! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
-        ", "
-      )}*`
+        ', ',
+      )}*`,
     );
     return;
   }
@@ -199,16 +183,13 @@ const logWorkout = async (message) => {
     if (!(month >= 1 && month <= 12)) {
       logResponse(
         message,
-        `Quit goofin' off, ${author}! Month should be a number from 1 to 12. You entered *${month}*.`
+        `Quit goofin' off, ${author}! Month should be a number from 1 to 12. You entered *${month}*.`,
       );
       return;
     }
 
     if (!/\d{4}/.test(year)) {
-      logResponse(
-        message,
-        `Quit goofin' off, ${author}! It's definitely not the year ${year}.`
-      );
+      logResponse(message, `Quit goofin' off, ${author}! It's definitely not the year ${year}.`);
       return;
     }
 
@@ -219,7 +200,7 @@ const logWorkout = async (message) => {
     if (!(day >= 1 && day <= dayCount)) {
       logResponse(
         message,
-        `Quit being silly, ${author}! Day should be a number between 1 and ${dayCount} for the month you gave. You entered *${day}*.`
+        `Quit being silly, ${author}! Day should be a number between 1 and ${dayCount} for the month you gave. You entered *${day}*.`,
       );
       return;
     }
@@ -227,17 +208,14 @@ const logWorkout = async (message) => {
     date = new Date(year, month - 1, day);
     flat = flatDate(utcToZonedTime(new Date(), userData.timeZone));
     if (dayIsAfter(date, flat)) {
-      logResponse(
-        message,
-        `Date alert, ${author}! The date you entered is in the future. Quit horsin' around!`
-      );
+      logResponse(message, `Date alert, ${author}! The date you entered is in the future. Quit horsin' around!`);
       return;
     }
 
     if (differenceInDays(flat, date) > SUBMISSION_WINDOW) {
       logResponse(
         message,
-        `Date alert, ${author}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`
+        `Date alert, ${author}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`,
       );
       return;
     }
@@ -247,21 +225,18 @@ const logWorkout = async (message) => {
 
   //Get all users
   let users = [author];
-  partnerIds.forEach((partnerId) => {
-    let partner = mentions.users.find((user) => user.id === partnerId);
+  partnerIds.forEach(partnerId => {
+    let partner = mentions.users.find(user => user.id === partnerId);
     if (partner && !partner.bot) {
       users.push(partner);
     }
   });
   users = _uniq(users);
 
-  let image;
-  if (attachments.size) {
-    let attachment = attachments.values().next().value;
-    image =
-      attachment.filename && MATCHERS.IMAGE_EXTS.test(`.${attachment.filename}`)
-        ? attachment
-        : image;
+  let imageURL;
+  let attachment = attachments.first();
+  if (attachment && MATCHERS.IMAGE_EXTS.test(`.${attachment.name}`)) {
+    imageURL = attachment.url;
   }
 
   try {
@@ -270,14 +245,11 @@ const logWorkout = async (message) => {
       workout,
       duration: `${duration} ${timeUnit}`,
       date,
-      logTime: formatDate(date, "M-d-yy h:mm:ssa"), // may need current timezone?
-      imageURL: image && image.url,
+      logTime: formatDate(date, 'M-d-yy h:mm:ssa'), // may need current timezone?
+      imageURL: imageURL,
     });
   } catch (error) {
-    logResponse(
-      message,
-      `Oh crap, ${author}! I tried to log your workout but got this error. **${error.message}**.`
-    );
+    logResponse(message, `Oh crap, ${author}! I tried to log your workout but got this error. **${error.message}**.`);
     return;
   }
 
@@ -285,17 +257,15 @@ const logWorkout = async (message) => {
 
   if (users.length > 1) {
     let logger = users.shift();
-    users = users.map((user) => user.toString());
-    let eachOf = users.length > 1 ? "each of " : "";
-    let end = users.splice(-2).join(" and ");
-    let mentions = [...users, end].join(", ");
+    users = users.map(user => user.toString());
+    let eachOf = users.length > 1 ? 'each of ' : '';
+    let end = users.splice(-2).join(' and ');
+    let mentions = [...users, end].join(', ');
 
     channel
-      .send(
-        `Hey! ${mentions}! I've logged activty for ${eachOf}you on behalf of ${logger}. Team work!`
-      )
+      .send(`Hey! ${mentions}! I've logged activty for ${eachOf}you on behalf of ${logger}. Team work!`)
       .then(() => {})
-      .catch((error) => console.log(error));
+      .catch(error => console.log(error));
   }
 
   return;

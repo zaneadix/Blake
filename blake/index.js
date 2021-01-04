@@ -21,9 +21,9 @@ client.on("messageReactionAdd", (reaction, user) => {
 client.on("message", handleMessage);
 
 client.on("messageUpdate", async (original, edit) => {
-  let success = edit.reactions.get(REACTIONS.SUCCESS);
+  let success = edit.reactions.cache.get(REACTIONS.SUCCESS);
 
-  if (!success || !success.users.get(client.user.id)) {
+  if (!success || !success.users.cache.get(client.user.id)) {
     handleMessage(edit);
   }
 });
@@ -35,7 +35,7 @@ async function handleMessage(message) {
 
   console.log("MESSAGE", author.username, "said", `"${content}"`);
 
-  if (message.isMentioned(client.user)) {
+  if (message.mentions.has(client.user)) {
     let command = (commandMatcher.exec(content) || [])[1];
 
     switch (command) {

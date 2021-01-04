@@ -229,18 +229,21 @@ Object.keys(commands).forEach((key, index, array) => {
   buttons.push(command.icon);
 });
 
-const handleHelpRequest = async (mr) => {
+const handleHelpRequest = async (messageOrReaction) => {
   let command;
   let channel;
   let response;
 
-  if (mr instanceof Discord.Message) {
-    channel = mr.channel;
-    commandName = (commandMatcher.exec(mr.content) || [])[1];
+  if (messageOrReaction instanceof Discord.Message) {
+    channel = messageOrReaction.channel;
+    commandName = (commandMatcher.exec(messageOrReaction.content) || [])[1];
     command = commands[commandName];
-  } else if (mr instanceof Discord.MessageReaction) {
-    channel = mr.message.channel;
-    command = _find(commands, (command) => command.icon === mr.emoji.name);
+  } else if (messageOrReaction instanceof Discord.MessageReaction) {
+    channel = messageOrReaction.message.channel;
+    command = _find(
+      commands,
+      (command) => command.icon === messageOrReaction.emoji.name
+    );
   }
 
   helpMenus[channel.id] = helpMenus[channel.id] || {
@@ -325,7 +328,7 @@ const updateHelpMenu = (reaction, user) => {
     reaction.message.id === menu.message.id &&
     user.id !== client.user.id
   ) {
-    reaction.remove(user);
+    reaction.users.remove(user);
     if (buttons.includes(reaction.emoji.name)) {
       handleHelpRequest(reaction);
     }

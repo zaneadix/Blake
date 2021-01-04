@@ -140,7 +140,7 @@ const clearResponses = (message) => {
 
 const logResponse = async (message, feedback, success = false) => {
   if (success) {
-    let failReaction = message.reactions.get(REACTIONS.FAILURE);
+    let failReaction = message.reactions.cache.get(REACTIONS.FAILURE);
     failReaction && (await failReaction.remove(client.user));
   }
 

@@ -160,7 +160,6 @@ const getLogsInRange = async (userId, fromDate, toDate) => {
  * - Total workouts for the year
  */
 const getActivityCountsInRange = async (fromDate, toDate) => {
-  console.log(fromDate, toDate);
   let data;
   try {
     data = await getDataFrom(fromDate);
@@ -257,7 +256,6 @@ const getTimeZone = async (address) => {
       params: { address, key: process.env.GOOGLE_MAPS_API_KEY },
     });
     geometry = response.data.results[0].geometry;
-    console.log("GEOMETRY", geometry);
   } catch (error) {
     console.log(error);
     throw new Error("Failed to retrieve geometry from provided address");
@@ -272,7 +270,6 @@ const getTimeZone = async (address) => {
       },
     });
     timeZone = response.data.timeZoneId;
-    console.log("TIME ZONE", timeZone);
   } catch (error) {
     console.log(error);
     throw new Error("Failed to retrieve timezone from provided geometry");

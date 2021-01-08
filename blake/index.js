@@ -78,7 +78,7 @@ async function handleMessage(message) {
   client.on('invalidated', () => {
     logger.info(`CLIENT INVALIDATED. REBOOTING...`);
     client.destroy();
-    process.abort();
+    process.exit();
   });
 
   let isLog = isLogMessage(message);

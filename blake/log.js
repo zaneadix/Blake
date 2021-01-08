@@ -6,11 +6,11 @@ const differenceInDays = require('date-fns/differenceInDays');
 
 const client = require('./client');
 const { getUserData } = require('../db');
+let logger = require('../logger');
 const g = require('../google');
 const { adjustedNow, flatDate, MATCHERS, REACTIONS, SUBMISSION_WINDOW, TIME_UNITS } = require('../utils');
 
 const failMessageCache = {};
-// const logChannelName = 'log-your-workout';
 
 const MINUTE = /minutes?|mins?/i;
 const HOUR = /hours?|hrs?/i;
@@ -58,7 +58,7 @@ Gym (wights/cardio) for 1.5 hours
         .then(response => {
           cacheResponse(message, response);
         })
-        .catch(error => console.log(error));
+        .catch(error => logger.error(error));
       return;
     case 'yes':
     default:
@@ -144,7 +144,7 @@ const logResponse = async (message, feedback, success = false) => {
         clearResponses(message);
       }
     })
-    .catch(error => console.log(error));
+    .catch(error => logger.error(error));
 
   if (feedback) {
     message.channel
@@ -154,7 +154,7 @@ const logResponse = async (message, feedback, success = false) => {
           cacheResponse(message, response);
         }
       })
-      .catch(error => console.log(error));
+      .catch(error => logger.error(error));
   }
 };
 
@@ -265,7 +265,7 @@ const logWorkout = async message => {
     channel
       .send(`Hey! ${mentions}! I've logged activty for ${eachOf}you on behalf of ${logger}. Team work!`)
       .then(() => {})
-      .catch(error => console.log(error));
+      .catch(error => logger.error(error));
   }
 
   return;

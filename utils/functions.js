@@ -1,13 +1,13 @@
-const formatDate = require("date-fns/format");
-const { utcToZonedTime } = require("date-fns-tz");
-const { MATCHERS } = require("./constants");
+const formatDate = require('date-fns/format');
+const { utcToZonedTime } = require('date-fns-tz');
+const { MATCHERS } = require('./constants');
 
 const flatDate = date => {
   return new Date((date || new Date()).setHours(0, 0, 0, 0));
 };
 
 const formatLogDate = date => {
-  return formatDate(date || Date.now(), "MMM d");
+  return formatDate(date || Date.now(), 'MMM d');
 };
 
 const isLog = content => {
@@ -24,5 +24,5 @@ module.exports = {
   isLog,
   formatLogDate,
   flatDate,
-  letterFromNumber
+  letterFromNumber,
 };

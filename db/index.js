@@ -1,8 +1,8 @@
-let redis = require("redis");
-let { promisify } = require("util");
+let redis = require('redis');
+let { promisify } = require('util');
 
 let dbClient = redis.createClient({
-  url: process.env.REDIS_URL
+  url: process.env.REDIS_URL,
 });
 
 class UserData {
@@ -13,8 +13,8 @@ class UserData {
   }
 }
 
-dbClient.on("error", function(err) {
-  console.log("Error " + err);
+dbClient.on('error', function (err) {
+  console.log('Error ' + err);
 });
 
 let getAsync = promisify(dbClient.get).bind(dbClient);

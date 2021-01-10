@@ -1,5 +1,5 @@
 class StringValue {
-  constructor(stringValue = "") {
+  constructor(stringValue = '') {
     this.userEnteredValue = {
       stringValue,
     };
@@ -23,7 +23,7 @@ class BooleanValue {
 }
 
 class FormulaValue {
-  constructor(formulaValue = "") {
+  constructor(formulaValue = '') {
     this.userEnteredValue = {
       formulaValue,
     };

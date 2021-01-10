@@ -1,52 +1,52 @@
-const { google } = require("googleapis");
-const geocoder = require("google-geocoder");
-const MapsClient = require("@googlemaps/google-maps-services-js").Client;
-const formatDate = require("date-fns/format");
-const sub = require("date-fns/sub");
-const isAfter = require("date-fns/isAfter");
-const isBefore = require("date-fns/isBefore");
-const getMonth = require("date-fns/getMonth");
+const { google } = require('googleapis');
+const geocoder = require('google-geocoder');
+const MapsClient = require('@googlemaps/google-maps-services-js').Client;
+const formatDate = require('date-fns/format');
+const sub = require('date-fns/sub');
+const isAfter = require('date-fns/isAfter');
+const isBefore = require('date-fns/isBefore');
+const getMonth = require('date-fns/getMonth');
 
-const { flatDate, LOG_COLUMNS, TALLY_COLUMNS } = require("../utils");
-const getWorkoutLog = require("./getWorkoutLog");
-const templateLogWorkout = require("./templateLogWorkout");
+const { flatDate, LOG_COLUMNS, TALLY_COLUMNS } = require('../utils');
+const getWorkoutLog = require('./getWorkoutLog');
+const templateLogWorkout = require('./templateLogWorkout');
 
 let directoryID = process.env.TFC_DIRECTORY_ID;
 
 const jwtClient = new google.auth.JWT(
   process.env.GOOGLE_CLIENT_EMAIL,
   null,
-  process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+  process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
   [
-    "https://www.googleapis.com/auth/drive",
-    "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive.metadata",
-    "https://www.googleapis.com/auth/spreadsheets",
-  ]
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive.metadata',
+    'https://www.googleapis.com/auth/spreadsheets',
+  ],
 );
 
 let maps = new MapsClient({});
 
 let g = {
-  drive: google.drive({ version: "v3" }),
-  sheets: google.sheets({ version: "v4" }),
+  drive: google.drive({ version: 'v3' }),
+  sheets: google.sheets({ version: 'v4' }),
   geocode: maps.geocode,
   timezone: maps.timezone,
   cache: {},
 };
 
 const initializeClients = async () => {
-  let auth = await new Promise((resolve) => {
+  let auth = await new Promise(resolve => {
     jwtClient
       .authorize()
       .then(() => {
-        console.log("Google APIs authorized");
+        console.log('Google APIs authorized');
         resolve(jwtClient);
       })
-      .catch((shit) => console.log(shit));
+      .catch(shit => console.log(shit));
   });
-  g.drive = google.drive({ version: "v3", auth });
-  g.sheets = google.sheets({ version: "v4", auth });
+  g.drive = google.drive({ version: 'v3', auth });
+  g.sheets = google.sheets({ version: 'v4', auth });
 };
 initializeClients();
 
@@ -60,21 +60,21 @@ const fetchData = async (workoutLog, months) => {
     await g.sheets.spreadsheets.values
       .batchGet({
         spreadsheetId: workoutLog.id,
-        ranges: ["Tally", ...months],
-        majorDimension: "ROWS",
+        ranges: ['Tally', ...months],
+        majorDimension: 'ROWS',
       })
       .then(({ data }) => {
         result = data.valueRanges;
       });
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to retrieve spreadsheet values");
+    throw new Error('Failed to retrieve spreadsheet values');
   }
 
   return result;
 };
 
-const getDataFrom = async (fromDate) => {
+const getDataFrom = async fromDate => {
   let date = flatDate();
   let year = date.getFullYear();
   let workoutLog;
@@ -86,10 +86,10 @@ const getDataFrom = async (fromDate) => {
   }
 
   let monthDiff = getMonth(date) - getMonth(fromDate);
-  let monthNames = [formatDate(date, "MMM")];
+  let monthNames = [formatDate(date, 'MMM')];
   for (let i = 0; i < monthDiff; i++) {
     date = sub(date, { months: 1 });
-    monthNames.push(formatDate(date, "MMM"));
+    monthNames.push(formatDate(date, 'MMM'));
   }
 
   let months;
@@ -112,14 +112,11 @@ const filterLogs = (months, fromDate, toDate, onMatch) => {
   let dateMap = {};
   months.forEach(({ values }) => {
     values.shift();
-    values.forEach((row) => {
+    values.forEach(row => {
       let dateValue = `${row[LOG_COLUMNS.DATE]} ${year}`; //date key
       dateMap[dateValue] = dateMap[dateValue] || flatDate(new Date(dateValue));
 
-      if (
-        isAfter(dateMap[dateValue], fromDate) &&
-        isBefore(dateMap[dateValue], toDate)
-      ) {
+      if (isAfter(dateMap[dateValue], fromDate) && isBefore(dateMap[dateValue], toDate)) {
         onMatch(row);
       }
     });
@@ -137,7 +134,7 @@ const getLogsInRange = async (userId, fromDate, toDate) => {
   let { months } = data;
   let logs = [];
 
-  filterLogs(months, fromDate, toDate, (row) => {
+  filterLogs(months, fromDate, toDate, row => {
     if (row[LOG_COLUMNS.ID] === userId) {
       logs.push({
         activity: row[LOG_COLUMNS.EXERCISE],
@@ -172,7 +169,7 @@ const getActivityCountsInRange = async (fromDate, toDate) => {
   let userMap = {};
 
   tally.values.shift();
-  tally.values.map((row) => {
+  tally.values.map(row => {
     let id = row[LOG_COLUMNS.ID];
     let username = row[LOG_COLUMNS.MEMBER];
     userMap[id] = userMap[id] || {
@@ -183,25 +180,18 @@ const getActivityCountsInRange = async (fromDate, toDate) => {
     };
   });
 
-  filterLogs(months, fromDate, toDate, (row) => {
+  filterLogs(months, fromDate, toDate, row => {
     let id = row[LOG_COLUMNS.ID];
     userMap[id].workoutsLogged++;
-    row[LOG_COLUMNS.FIRST_OF_DAY] === "yes" && userMap[id].daysWorkedOut++;
+    row[LOG_COLUMNS.FIRST_OF_DAY] === 'yes' && userMap[id].daysWorkedOut++;
   });
 
   return userMap;
 };
 
-const tallyWorkout = async ({
-  users,
-  workout,
-  duration,
-  date,
-  logTime,
-  imageURL,
-}) => {
-  let year = formatDate(date, "yyyy");
-  let month = formatDate(date, "MMM");
+const tallyWorkout = async ({ users, workout, duration, date, logTime, imageURL }) => {
+  let year = formatDate(date, 'yyyy');
+  let month = formatDate(date, 'MMM');
   let workoutLog;
 
   try {
@@ -237,17 +227,17 @@ const tallyWorkout = async ({
           duration,
           date,
           logTime,
-          imageURL
-        )
+          imageURL,
+        ),
       )
       .then(() => {});
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to update spreadsheet");
+    throw new Error('Failed to update spreadsheet');
   }
 };
 
-const getTimeZone = async (address) => {
+const getTimeZone = async address => {
   let geometry;
   let timeZone;
 
@@ -258,7 +248,7 @@ const getTimeZone = async (address) => {
     geometry = response.data.results[0].geometry;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to retrieve geometry from provided address");
+    throw new Error('Failed to retrieve geometry from provided address');
   }
 
   try {
@@ -272,7 +262,7 @@ const getTimeZone = async (address) => {
     timeZone = response.data.timeZoneId;
   } catch (error) {
     console.log(error);
-    throw new Error("Failed to retrieve timezone from provided geometry");
+    throw new Error('Failed to retrieve timezone from provided geometry');
   }
 
   return timeZone;

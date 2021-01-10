@@ -5,6 +5,6 @@ module.exports = data => {
   });
   return {
     id: data.id || data.spreadsheetId,
-    sheets
+    sheets,
   };
 };

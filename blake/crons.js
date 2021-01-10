@@ -1,19 +1,19 @@
-const schedule = require("node-schedule");
-const { table } = require("table");
-const formatDate = require("date-fns/format");
-const add = require("date-fns/add");
-const sub = require("date-fns/sub");
-const _chunk = require("lodash/chunk");
+const schedule = require('node-schedule');
+const { table } = require('table');
+const formatDate = require('date-fns/format');
+const add = require('date-fns/add');
+const sub = require('date-fns/sub');
+const _chunk = require('lodash/chunk');
 
-const g = require("../google");
-const { flatDate } = require("../utils");
+const g = require('../google');
+const { flatDate } = require('../utils');
 const GUILD_ID = process.env.TFC_GUILD;
 
 const getChannel = (client, channelName) => {
   let guild = client.guilds.get(GUILD_ID);
   let channel;
   if (guild) {
-    channel = guild.channels.find((channel) => channel.name === channelName);
+    channel = guild.channels.find(channel => channel.name === channelName);
   }
   return channel;
 };
@@ -30,7 +30,7 @@ const getChannel = (client, channelName) => {
   └───────────────────────── second (0 - 59, OPTIONAL)
  */
 
-const crons = (client) => {
+const crons = client => {
   /**
    * Every Monday at 8am
    * I'm looking for workouts between (exclusive)
@@ -39,7 +39,7 @@ const crons = (client) => {
    * TO: Today at 00:00;
    * "0 6 * * 1"
    */
-  const weekleyResult = schedule.scheduleJob("0 6 * * 1", async () => {
+  const weekleyResult = schedule.scheduleJob('0 6 * * 1', async () => {
     let to = flatDate();
     let from = sub(to, { days: 8 });
     let counts;
@@ -47,26 +47,21 @@ const crons = (client) => {
     try {
       counts = await g.getActivityCountsInRange(from, to);
     } catch (error) {
-      console.log("Failed to get weekley results");
+      console.log('Failed to get weekley results');
       console.log(error);
       return;
     }
 
     let data = [];
-    Object.keys(counts).forEach((id) => {
+    Object.keys(counts).forEach(id => {
       let row = counts[id];
-      data.push([
-        row.username,
-        row.workoutsLogged,
-        row.daysWorkedOut,
-        row.yearTotal,
-      ]);
+      data.push([row.username, row.workoutsLogged, row.daysWorkedOut, row.yearTotal]);
     });
     data.sort((a, b) => b[2] - a[2]);
 
     let messages = _chunk(data, 10).map((chunk, index) => {
       if (index === 0) {
-        chunk.unshift(["Member", "Logged", "Days", "Year"]);
+        chunk.unshift(['Member', 'Logged', 'Days', 'Year']);
       }
 
       let output = table(chunk, {
@@ -78,11 +73,11 @@ const crons = (client) => {
         },
       });
 
-      let message = "```" + output.toString() + "```";
+      let message = '```' + output.toString() + '```';
 
       if (index === 0) {
         message = `Rise and shine, Tranquili-nerds! I've prepared your summary for:
-**The Week of ${formatDate(add(from, { days: 1 }), "MMM do")}**
+**The Week of ${formatDate(add(from, { days: 1 }), 'MMM do')}**
 Take a look and make sure every workout you've done is accounted for.
 If something seems off, be sure to get in touch with an admin.
 We wouldn't want any of your hard work slipping through the cracks!
@@ -95,8 +90,8 @@ ${message}`;
       return message;
     });
 
-    let channel = getChannel(client, "home");
-    messages.forEach((message) => {
+    let channel = getChannel(client, 'home');
+    messages.forEach(message => {
       channel.send(message);
     });
   });

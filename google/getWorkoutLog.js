@@ -1,6 +1,6 @@
-const templateWorkoutLog = require("./templateWorkoutLog");
-const templateLogSheets = require("./templateLogSheets");
-const serializeWorkoutLog = require("./serializeWorkoutLog");
+const templateWorkoutLog = require('./templateWorkoutLog');
+const templateLogSheets = require('./templateLogSheets');
+const serializeWorkoutLog = require('./serializeWorkoutLog');
 
 const owner = process.env.TFC_OWNER;
 
@@ -19,14 +19,14 @@ module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
     try {
       await drive.files
         .list({
-          q: `name = "${logName}" and "${directoryID}" in parents and trashed = false`
+          q: `name = "${logName}" and "${directoryID}" in parents and trashed = false`,
         })
         .then(({ data }) => {
           spreadsheetId = data.files[0] ? data.files[0].id : spreadsheetId;
         });
     } catch (error) {
       console.log(error);
-      throw new Error("Failed to retrieve directory files");
+      throw new Error('Failed to retrieve directory files');
     }
   }
 
@@ -35,29 +35,25 @@ module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
       await sheets.spreadsheets.get({ spreadsheetId }).then(reciever);
     } catch (error) {
       console.log(error);
-      throw new Error("Failed to get spreadsheet");
+      throw new Error('Failed to get spreadsheet');
     }
   }
 
   if (!workoutLog) {
     // Create spreadsheet
     try {
-      await sheets.spreadsheets
-        .create({ resource: templateWorkoutLog(logName) })
-        .then(reciever);
+      await sheets.spreadsheets.create({ resource: templateWorkoutLog(logName) }).then(reciever);
     } catch (error) {
       console.log(error);
-      throw new Error("Failed to create spreadsheet");
+      throw new Error('Failed to create spreadsheet');
     }
 
     // Apply Formatting
     try {
-      await sheets.spreadsheets
-        .batchUpdate(templateLogSheets(workoutLog))
-        .then(() => {});
+      await sheets.spreadsheets.batchUpdate(templateLogSheets(workoutLog)).then(() => {});
     } catch (error) {
       console.log(error);
-      throw new Error("Failed to apply formatting to spreadsheet");
+      throw new Error('Failed to apply formatting to spreadsheet');
     }
 
     // Move file into TFC directory
@@ -65,12 +61,12 @@ module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
       await drive.files
         .update({
           fileId: workoutLog.id,
-          addParents: [directoryID]
+          addParents: [directoryID],
         })
         .then(() => {});
     } catch (error) {
       console.log(error);
-      throw new Error("Failed to move spreadsheet into directory");
+      throw new Error('Failed to move spreadsheet into directory');
     }
 
     // Transfer ownership of file to TFC owner
@@ -80,16 +76,16 @@ module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
           fileId: workoutLog.id,
           transferOwnership: true,
           resource: {
-            type: "user",
-            role: "owner",
+            type: 'user',
+            role: 'owner',
             emailAddress: owner,
-            transferOwnership: true
-          }
+            transferOwnership: true,
+          },
         })
         .then(() => {});
     } catch (error) {
       console.log(error);
-      throw new Error("Failed to move spreadsheet into directory");
+      throw new Error('Failed to move spreadsheet into directory');
     }
   }
 

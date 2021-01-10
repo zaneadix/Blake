@@ -2,38 +2,25 @@ const COLORS = {
   BLUE: {
     red: 0.082,
     green: 0.396,
-    blue: 0.753
+    blue: 0.753,
   },
   WHITE: {
     red: 0.961,
     green: 0.961,
-    blue: 0.961
-  }
+    blue: 0.961,
+  },
 };
 
 const MATCHERS = {
   COMMANDS: /<@!?\d+>\s+([a-z]+)/i,
-  IMAGE_EXTS: /\.(jpe?g|tiff|png)$/i
+  IMAGE_EXTS: /\.(jpe?g|tiff|png)$/i,
 };
 
-const MONTHS = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec'
-];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const REACTIONS = {
   SUCCESS: '✅',
-  FAILURE: '❌'
+  FAILURE: '❌',
 };
 
 const TIME_UNITS = ['min', 'mins', 'minutes', 'hr', 'hrs', 'hour', 'hours'];
@@ -54,7 +41,7 @@ const LOG_COLUMNS = makeColumns([
   'DATE',
   'PICTURE',
   'FIRST_OF_DAY',
-  'LOG_TIME'
+  'LOG_TIME',
 ]);
 
 const SUBMISSION_WINDOW = 7;
@@ -67,5 +54,5 @@ module.exports = {
   REACTIONS,
   SUBMISSION_WINDOW,
   TALLY_COLUMNS,
-  TIME_UNITS
+  TIME_UNITS,
 };

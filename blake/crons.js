@@ -9,11 +9,11 @@ const g = require('../google');
 const { flatDate } = require('../utils');
 const GUILD_ID = process.env.TFC_GUILD;
 
-const getChannel = (client, channelName) => {
-  let guild = client.guilds.get(GUILD_ID);
+const getChannel = async (client, channelName) => {
+  let guild = await client.guilds.fetch(GUILD_ID);
   let channel;
   if (guild) {
-    channel = guild.channels.find(channel => channel.name === channelName);
+    channel = guild.channels.cache.find(channel => channel.name === channelName);
   }
   return channel;
 };
@@ -38,7 +38,10 @@ const crons = client => {
    * FROM: 8 days ago
    * TO: Today at 00:00;
    * "0 6 * * 1"
+   *
    */
+
+  // '*/5 * * * * *' to test
   const weekleyResult = schedule.scheduleJob('0 6 * * 1', async () => {
     let to = flatDate();
     let from = sub(to, { days: 8 });
@@ -90,7 +93,7 @@ ${message}`;
       return message;
     });
 
-    let channel = getChannel(client, 'home');
+    let channel = await getChannel(client, process.env.TFC_SUMMARY_CHANNEL_NAME);
     messages.forEach(message => {
       channel.send(message);
     });

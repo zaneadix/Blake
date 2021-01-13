@@ -15,6 +15,11 @@ client.on('ready', () => {
   crons(client);
 });
 
+client.on('invalidated', () => {
+  logger.info(`CLIENT INVALIDATED. REBOOTING...`);
+  process.exit();
+});
+
 client.on('messageReactionAdd', (reaction, user) => {
   updateHelpMenu(reaction, user);
 });
@@ -32,9 +37,9 @@ client.on('messageUpdate', async (original, edit) => {
 async function handleMessage(message) {
   let { author, channel, content } = message;
 
-  if (author.bot) return;
+  console.log('HANDLING:', content);
 
-  logger.info(`MESSAGE: ${author.username}: "${content}"`);
+  if (author.bot) return;
 
   if (message.mentions.has(client.user)) {
     let command = (commandMatcher.exec(content) || [])[1];
@@ -75,14 +80,8 @@ async function handleMessage(message) {
     }
   }
 
-  client.on('invalidated', () => {
-    logger.info(`CLIENT INVALIDATED. REBOOTING...`);
-    client.destroy();
-    process.exit();
-  });
-
   let isLog = isLogMessage(message);
-  if (isLog) {
+  if (isLog && channel.name === process.env.TFC_WORKOUT_CHANNEL_NAME) {
     await logWorkout(message);
   }
 }

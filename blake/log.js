@@ -1,42 +1,36 @@
-const _uniq = require('lodash/uniq');
-const formatDate = require('date-fns/format');
-const dayIsAfter = require('date-fns/isAfter');
-const { utcToZonedTime } = require('date-fns-tz');
-const differenceInDays = require('date-fns/differenceInDays');
+let _uniq = require('lodash/uniq');
+let formatDate = require('date-fns/format');
+let dayIsAfter = require('date-fns/isAfter');
+let { utcToZonedTime } = require('date-fns-tz');
+let differenceInDays = require('date-fns/differenceInDays');
 
-const client = require('./client');
-const { getUserData } = require('../db');
+let client = require('./client');
 let logger = require('../logger');
-const g = require('../google');
-const { adjustedNow, flatDate, MATCHERS, REACTIONS, SUBMISSION_WINDOW, TIME_UNITS } = require('../utils');
+let g = require('../google');
+let { getUserData } = require('../db');
+let { flatDate, MATCHERS, REACTIONS, SUBMISSION_WINDOW, TIME_UNITS } = require('../utils');
 
-const failMessageCache = {};
+let failMessageCache = {};
 
 const MINUTE = /minutes?|mins?/i;
 const HOUR = /hours?|hrs?/i;
-const WORKOUT = /((['()/\\\w]+\s?)+)/i;
-const TIME = /(((\d.?)+)\s*?([a-z]+))/i; //need to validate number using DURATION
-const DATE = /\s+on\s+((\d+)\/(\d+)(\/(\d+))?)/i;
-const PARTNERS = /\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+/i;
+const LOG = /^((['()/\\\w\s])+)\s+for\s+((\d+)\s*?(minutes?|mins?|hours?|hrs?))/i;
+const LOG_OPTIONS = /(\s+on\s+((\d+)\/(\d+)(\/(\d+))?)|\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+)/gi;
+const POSSIBLE_LOG = /(\d\.*)+\s*(minutes?|mins?|hours?|hrs?)/i;
 
-const LOG = new RegExp(
-  `^((${WORKOUT.source}\\s+for\\s+${TIME.source})|(<@!?\\d+>\\s+log\\s+${TIME.source}\\s+of\\s+${WORKOUT.source}))`,
-);
-const LOG_OPTIONS = new RegExp(`(${DATE.source}|${PARTNERS.source})`, 'ig');
-const POSSIBLE_LOG = /(\d\.*)+\s*(mins?|minutes?|hrs?|hours?)(?=\s)/i;
+let parseLog = content => {
+  let firstSentence = content.split('.')[0] || '';
+  firstSentence = firstSentence.replace(MATCHERS.COMMAND, '');
+  return firstSentence;
+};
 
-const isLogMessage = message => {
-  let possibility = LOG.test(message.content);
-  let isLog = false;
-  if (!possibility) {
-    possibility = POSSIBLE_LOG.test(message.content) ? 'maybe' : 'no';
-  } else {
-    possibility = 'yes';
-    isLog = true;
-  }
+let isLogMessage = message => {
+  let log = parseLog(message.content);
+  let isLog = log.includes('for') && LOG.test(log);
 
-  switch (possibility) {
-    case 'maybe':
+  if (!isLog) {
+    let maybe = POSSIBLE_LOG.test(log);
+    if (maybe) {
       message
         .reply(
           `I think you might have just tried to submit a log.
@@ -59,16 +53,14 @@ Gym (wights/cardio) for 1.5 hours
           cacheResponse(message, response);
         })
         .catch(error => logger.error(error));
-      return;
-    case 'yes':
-    default:
-      break;
+    }
   }
 
   return isLog;
 };
 
-const getLogValues = log => {
+const getLogValues = content => {
+  let log = parseLog(content);
   let cutoff = log.length;
   let values = {
     year: new Date().getFullYear(),
@@ -95,17 +87,10 @@ const getLogValues = log => {
 
   log = log.substring(0, cutoff).trim();
 
-  let workout, duration, timeUnit;
   let req = LOG.exec(log);
-  if (log.includes(' for ')) {
-    workout = req[3];
-    duration = req[6];
-    timeUnit = req[8];
-  } else if (log.includes(' of ')) {
-    workout = req[14];
-    duration = req[11];
-    timeUnit = req[13];
-  }
+  let workout = req[1];
+  let duration = req[4];
+  let timeUnit = req[5];
 
   return Object.assign(values, {
     duration,
@@ -161,6 +146,8 @@ const logResponse = async (message, feedback, success = false) => {
 const logWorkout = async message => {
   let { attachments, author, channel, content, mentions } = message;
   let { date, day, month, year, duration, timeUnit, workout, partnerIds } = getLogValues(content);
+
+  logger.info(`LOG ACTIVITY: ${author.username}: "${content}"`);
 
   let userData = await getUserData(author);
 

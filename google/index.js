@@ -189,7 +189,7 @@ const getActivityCountsInRange = async (fromDate, toDate) => {
   return userMap;
 };
 
-const tallyWorkout = async ({ users, workout, duration, date, logTime, imageURL }) => {
+const tallyWorkout = async ({ members, workout, duration, date, logTime, imageURL }) => {
   let year = formatDate(date, 'yyyy');
   let month = formatDate(date, 'MMM');
   let workoutLog;
@@ -222,7 +222,7 @@ const tallyWorkout = async ({ users, workout, duration, date, logTime, imageURL 
           tallyData.values,
           logData.values,
           month,
-          users,
+          members,
           workout,
           duration,
           date,

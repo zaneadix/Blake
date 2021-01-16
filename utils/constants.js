@@ -36,6 +36,8 @@ const TALLY_COLUMNS = makeColumns(['ID', 'MEMBER', ...MONTHS, 'TOTAL']);
 const LOG_COLUMNS = makeColumns([
   'ID',
   'MEMBER',
+  'CTE_TEAM_ID',
+  'CTE_TEAM',
   'EXERCISE',
   'DURATION',
   'DATE',

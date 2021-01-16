@@ -92,7 +92,7 @@ module.exports = workoutLog => {
   MONTHS.map(month => {
     requests = [
       ...requests,
-      ...buildHeader(workoutLog.sheets[month], 0, 8, [
+      ...buildHeader(workoutLog.sheets[month], 0, 10, [
         {
           start: LOG_COLUMNS.ID,
           end: LOG_COLUMNS.ID + 1,
@@ -100,6 +100,13 @@ module.exports = workoutLog => {
           hidden: true,
         },
         { start: LOG_COLUMNS.MEMBER, end: LOG_COLUMNS.MEMBER + 1, width: 120 },
+        {
+          start: LOG_COLUMNS.CTE_TEAM_ID,
+          end: LOG_COLUMNS.CTE_TEAM_ID + 1,
+          width: 0,
+          hidden: true,
+        },
+        { start: LOG_COLUMNS.CTE_TEAM, end: LOG_COLUMNS.CTE_TEAM + 1, width: 200 },
         {
           start: LOG_COLUMNS.EXERCISE,
           end: LOG_COLUMNS.EXERCISE + 1,

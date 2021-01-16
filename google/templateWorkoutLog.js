@@ -34,6 +34,8 @@ class LogSheet {
             values: [
               new StringValue('ID'),
               new StringValue('Member'),
+              new StringValue('CTE Team ID'),
+              new StringValue('CTE Team'),
               new StringValue('Exercise'),
               new StringValue('Duration'),
               new StringValue('Date'),

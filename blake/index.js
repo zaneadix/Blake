@@ -37,8 +37,6 @@ client.on('messageUpdate', async (original, edit) => {
 async function handleMessage(message) {
   let { author, channel, content } = message;
 
-  console.log('HANDLING:', content);
-
   if (author.bot) return;
 
   if (message.mentions.has(client.user)) {

@@ -42,36 +42,36 @@ class UpdateCellRequest {
   }
 }
 
-module.exports = (workoutLog, tallyData, logData, month, users, exercise, duration, date, logTime, imageURL) => {
+module.exports = (workoutLog, tallyData, logData, month, members, exercise, duration, date, logTime, imageURL) => {
   // Find the row of the current user
 
   let requests = [];
   let addRowCount = 0;
-  users.forEach((user, index) => {
+  members.forEach(member => {
     let firstOfDay = !logData.find(row => {
-      return row[LOG_COLUMNS.ID] === user.id && row[LOG_COLUMNS.DATE] === formatLogDate(date);
+      return row[LOG_COLUMNS.ID] === member.user.id && row[LOG_COLUMNS.DATE] === formatLogDate(date);
     });
 
     let rowIndex = -1;
     let userRow = tallyData.find(row => {
       rowIndex++;
-      return row[TALLY_COLUMNS.ID] === user.id;
+      return row[TALLY_COLUMNS.ID] === member.user.id;
     });
 
-    if (userRow && userRow[TALLY_COLUMNS.MEMBER] !== user.username) {
+    if (userRow && userRow[TALLY_COLUMNS.MEMBER] !== member.user.username) {
       requests.push(
         new UpdateCellRequest(
           workoutLog.sheets['Tally'],
           rowIndex,
           TALLY_COLUMNS.MEMBER,
-          new StringValue(user.username),
+          new StringValue(member.user.username),
         ),
       );
     }
 
     if (!userRow) {
       let tallyRow = rowIndex + 2 + addRowCount++;
-      let rowData = [new StringValue(user.id), new StringValue(user.username)];
+      let rowData = [new StringValue(member.user.id), new StringValue(member.user.username)];
 
       // Create formula to tally from associated month sheet
       let tallyId = letterFromNumber(TALLY_COLUMNS.ID);
@@ -92,10 +92,24 @@ module.exports = (workoutLog, tallyData, logData, month, users, exercise, durati
       requests.push(new AddRowRequest(workoutLog.sheets['Tally'], rowData));
     }
 
+    let cteName = '';
+    let cteID = '';
+
+    let cteRole = member.roles.cache.find(role => {
+      return /^CTE/i.test(role.name);
+    });
+
+    if (cteRole) {
+      cteID = cteRole.id;
+      cteName = /^CTE$/i.test(cteRole.name) ? cteRole.name : cteRole.name.replace('CTE', '').trim();
+    }
+
     requests.push(
       new AddRowRequest(workoutLog.sheets[month], [
-        new StringValue(user.id),
-        new StringValue(user.username),
+        new StringValue(member.user.id),
+        new StringValue(member.user.username),
+        new StringValue(cteID),
+        new StringValue(cteName),
         new StringValue(exercise),
         new StringValue(duration),
         new StringValue(formatLogDate(date)),

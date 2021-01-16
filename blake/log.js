@@ -116,7 +116,7 @@ const clearResponses = message => {
   }
 };
 
-const logResponse = async (message, feedback, success = false) => {
+const logResponse = async (message, feedback, success = false, cteCompliant = false) => {
   if (success) {
     let failReaction = message.reactions.cache.get(REACTIONS.FAILURE);
     failReaction && (await failReaction.remove(client.user));
@@ -131,6 +131,10 @@ const logResponse = async (message, feedback, success = false) => {
     })
     .catch(error => logger.error(error));
 
+  if (success && cteCompliant) {
+    message.react(message.guild.emojis.cache.get(process.env.TFC_CTE_COMPLIANT_EMOJI));
+  }
+
   if (feedback) {
     message.channel
       .send(feedback)
@@ -144,12 +148,12 @@ const logResponse = async (message, feedback, success = false) => {
 };
 
 const logWorkout = async message => {
-  let { attachments, author, channel, content, mentions } = message;
+  let { attachments, author, channel, content, member, mentions } = message;
   let { date, day, month, year, duration, timeUnit, workout, partnerIds } = getLogValues(content);
 
-  logger.info(`LOG ACTIVITY: ${author.username}: "${content}"`);
+  logger.info(`LOG ACTIVITY: ${member.user.username}: "${content}"`);
 
-  let userData = await getUserData(author);
+  let userData = await getUserData(member.user);
 
   if (MINUTE.test(timeUnit)) {
     timeUnit = 'minute';
@@ -158,7 +162,9 @@ const logWorkout = async message => {
   } else {
     logResponse(
       message,
-      `Sorry, ${author}! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
+      `Sorry, ${
+        member.user
+      }! The time unit you entered (*${timeUnit}*) is not one I know. Make sure to use one of these: *${TIME_UNITS.join(
         ', ',
       )}*`,
     );
@@ -170,13 +176,13 @@ const logWorkout = async message => {
     if (!(month >= 1 && month <= 12)) {
       logResponse(
         message,
-        `Quit goofin' off, ${author}! Month should be a number from 1 to 12. You entered *${month}*.`,
+        `Quit goofin' off, ${member.user}! Month should be a number from 1 to 12. You entered *${month}*.`,
       );
       return;
     }
 
     if (!/\d{4}/.test(year)) {
-      logResponse(message, `Quit goofin' off, ${author}! It's definitely not the year ${year}.`);
+      logResponse(message, `Quit goofin' off, ${member.user}! It's definitely not the year ${year}.`);
       return;
     }
 
@@ -187,7 +193,7 @@ const logWorkout = async message => {
     if (!(day >= 1 && day <= dayCount)) {
       logResponse(
         message,
-        `Quit being silly, ${author}! Day should be a number between 1 and ${dayCount} for the month you gave. You entered *${day}*.`,
+        `Quit being silly, ${member.user}! Day should be a number between 1 and ${dayCount} for the month you gave. You entered *${day}*.`,
       );
       return;
     }
@@ -195,14 +201,14 @@ const logWorkout = async message => {
     date = new Date(year, month - 1, day);
     flat = flatDate(utcToZonedTime(new Date(), userData.timeZone));
     if (dayIsAfter(date, flat)) {
-      logResponse(message, `Date alert, ${author}! The date you entered is in the future. Quit horsin' around!`);
+      logResponse(message, `Date alert, ${member.user}! The date you entered is in the future. Quit horsin' around!`);
       return;
     }
 
     if (differenceInDays(flat, date) > SUBMISSION_WINDOW) {
       logResponse(
         message,
-        `Date alert, ${author}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`,
+        `Date alert, ${member.user}! The date you entered is outside the ${SUBMISSION_WINDOW} day window. Please contact an admin to have your workout logged manually.`,
       );
       return;
     }
@@ -211,14 +217,14 @@ const logWorkout = async message => {
   date = date || utcToZonedTime(new Date(), userData.timeZone); //default date is today
 
   //Get all users
-  let users = [author];
+  let members = [member];
   partnerIds.forEach(partnerId => {
-    let partner = mentions.users.find(user => user.id === partnerId);
+    let partner = mentions.members.find(member => member.id === partnerId);
     if (partner && !partner.bot) {
-      users.push(partner);
+      members.push(partner);
     }
   });
-  users = _uniq(users);
+  members = _uniq(members);
 
   let imageURL;
   let attachment = attachments.first();
@@ -228,7 +234,7 @@ const logWorkout = async message => {
 
   try {
     await g.tallyWorkout({
-      users,
+      members,
       workout,
       duration: `${duration} ${timeUnit}`,
       date,
@@ -236,18 +242,21 @@ const logWorkout = async message => {
       imageURL: imageURL,
     });
   } catch (error) {
-    logResponse(message, `Oh crap, ${author}! I tried to log your workout but got this error. **${error.message}**.`);
+    logResponse(
+      message,
+      `Oh crap, ${member.user}! I tried to log your workout but got this error. **${error.message}**.`,
+    );
     return;
   }
 
-  logResponse(message, null, true);
+  logResponse(message, null, true, !!imageURL);
 
-  if (users.length > 1) {
-    let logger = users.shift();
-    users = users.map(user => user.toString());
-    let eachOf = users.length > 1 ? 'each of ' : '';
-    let end = users.splice(-2).join(' and ');
-    let mentions = [...users, end].join(', ');
+  if (members.length > 1) {
+    let logger = members.shift();
+    members = members.map(members => members.user.toString());
+    let eachOf = members.length > 1 ? 'each of ' : '';
+    let end = members.splice(-2).join(' and ');
+    let mentions = [...members, end].join(', ');
 
     channel
       .send(`Hey! ${mentions}! I've logged activty for ${eachOf}you on behalf of ${logger}. Team work!`)

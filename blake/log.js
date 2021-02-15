@@ -14,13 +14,14 @@ let failMessageCache = {};
 
 const MINUTE = /minutes?|mins?/i;
 const HOUR = /hours?|hrs?/i;
-const LOG = /^((['()/\\\w\s])+)\s+for\s+((\d+)\s*?(minutes?|mins?|hours?|hrs?))/i;
+const LOG = /^((['()/\\\w\s])+)\s+for\s+((\d+(\.\d+)?)\s*?(minutes?|mins?|hours?|hrs?))/i;
 const LOG_OPTIONS = /(\s+on\s+((\d+)\/(\d+)(\/(\d+))?)|\s+with\s+(\s*(and\s)?<@!?\d+>\s*,?)+)/gi;
 const POSSIBLE_LOG = /(\d\.*)+\s*(minutes?|mins?|hours?|hrs?)/i;
 
 let parseLog = content => {
-  let firstSentence = content.split('.')[0] || '';
+  let firstSentence = content.split(/\.(?!\d)/)[0] || '';
   firstSentence = firstSentence.replace(MATCHERS.COMMAND, '');
+  console.log(firstSentence);
   return firstSentence;
 };
 
@@ -88,9 +89,10 @@ const getLogValues = content => {
   log = log.substring(0, cutoff).trim();
 
   let req = LOG.exec(log);
+  console.log(req);
   let workout = req[1];
   let duration = req[4];
-  let timeUnit = req[5];
+  let timeUnit = req[6];
 
   return Object.assign(values, {
     duration,
@@ -150,6 +152,11 @@ const logResponse = async (message, feedback, success = false, cteCompliant = fa
 const logWorkout = async message => {
   let { attachments, author, channel, content, member, mentions } = message;
   let { date, day, month, year, duration, timeUnit, workout, partnerIds } = getLogValues(content);
+
+  // temporary fix. Spotify embeds are causing messages to post twice.
+  if (message.embeds.length) {
+    return;
+  }
 
   logger.info(`LOG ACTIVITY: ${member.user.username}: "${content}"`);
 

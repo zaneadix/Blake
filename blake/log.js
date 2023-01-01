@@ -21,7 +21,6 @@ const POSSIBLE_LOG = /(\d\.*)+\s*(minutes?|mins?|hours?|hrs?)/i;
 let parseLog = content => {
   let firstSentence = content.split(/\.(?!\d)/)[0] || '';
   firstSentence = firstSentence.replace(MATCHERS.COMMAND, '');
-  console.log(firstSentence);
   return firstSentence;
 };
 
@@ -89,7 +88,6 @@ const getLogValues = content => {
   log = log.substring(0, cutoff).trim();
 
   let req = LOG.exec(log);
-  console.log(req);
   let workout = req[1];
   let duration = req[4];
   let timeUnit = req[6];
@@ -157,8 +155,6 @@ const logWorkout = async message => {
   if (message.embeds.length) {
     return;
   }
-
-  logger.info(`LOG ACTIVITY: ${member.user.username}: "${content}"`);
 
   let userData = await getUserData(member.user);
 

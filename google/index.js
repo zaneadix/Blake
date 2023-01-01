@@ -22,6 +22,7 @@ const jwtClient = new google.auth.JWT(
     'https://www.googleapis.com/auth/drive.file',
     'https://www.googleapis.com/auth/drive.metadata',
     'https://www.googleapis.com/auth/spreadsheets',
+    ``,
   ],
 );
 

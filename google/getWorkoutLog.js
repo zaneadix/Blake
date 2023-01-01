@@ -2,8 +2,6 @@ const templateWorkoutLog = require('./templateWorkoutLog');
 const templateLogSheets = require('./templateLogSheets');
 const serializeWorkoutLog = require('./serializeWorkoutLog');
 
-const owner = process.env.TFC_OWNER;
-
 module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
   let logName = `${year} Workout Log`;
   let spreadsheetId;
@@ -69,23 +67,45 @@ module.exports = async ({ drive, sheets, cache }, directoryID, year) => {
       throw new Error('Failed to move spreadsheet into directory');
     }
 
-    // Transfer ownership of file to TFC owner
+    // Give anyone with link view permission
     try {
       await drive.permissions
         .create({
           fileId: workoutLog.id,
-          transferOwnership: true,
           resource: {
-            type: 'user',
-            role: 'owner',
-            emailAddress: owner,
-            transferOwnership: true,
+            type: 'anyone',
+            role: 'reader',
           },
         })
         .then(() => {});
     } catch (error) {
+      // FAIL SILENTLY
       console.log(error);
-      throw new Error('Failed to move spreadsheet into directory');
+      console.log(`Failed to make workout log viewable by anyone with link`);
+    }
+
+    // Give edit permissions to TFC managers
+    const managers = (process.env.TFC_MANAGERS || '').split(',');
+
+    if (managers.length) {
+      for (const manager of managers) {
+        try {
+          await drive.permissions
+            .create({
+              fileId: workoutLog.id,
+              resource: {
+                type: 'user',
+                role: 'writer',
+                emailAddress: manager,
+              },
+            })
+            .then(() => {});
+        } catch (error) {
+          // FAIL SILENTLY
+          console.log(error);
+          console.log(`Failed to give edit permissions to ${manager}`);
+        }
+      }
     }
   }
 
